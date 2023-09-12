@@ -1,0 +1,16 @@
+from collections import Counter
+
+
+class BaselineMajority:
+    def __init__(self, acts: list[str]):
+        counts = Counter(acts)
+        counts = sorted(counts.items(), key=lambda item: item[1], reverse=True)
+
+        majority_act = counts[0][0]  # Should be "inform"
+        assert majority_act == "inform"
+
+        self.majority_act = majority_act
+        self.info = "majority act: \"inform\""
+
+    def predict(self, sentence: str) -> str:
+        return self.majority_act
