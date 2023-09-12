@@ -3,7 +3,7 @@ from collections import Counter, defaultdict
 
 from giorgio_baselines.data import train_data
 
-RULES = [  # 90%
+RULES = [  # >90%
     ("phone", "request"),
     ("yes", "affirm"),
     ("address", "request"),
@@ -19,12 +19,13 @@ RULES = [  # 90%
     ("bye", "bye"),
 ]
 
-LESS_RULES = [  # Still gets 80%
+LESS_RULES = [  # >80%
     ("phone", "request"),
     ("yes", "affirm"),
     ("address", "request"),
     ("thank", "thankyou"),
     ("about", "reqalts"),
+    ("sil", "null"),
 ]
 
 

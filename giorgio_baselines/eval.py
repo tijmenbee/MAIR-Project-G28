@@ -4,8 +4,21 @@ from baseline_rulebased import BaselineRuleBased
 from giorgio_baselines.data import train_data
 
 
+TRAINING = True
+
+
+if TRAINING:
+    print("Evaluating on TRAINING set.")
+else:
+    print("Evaluating on TEST set. DO NOT KEEP DOING THIS. ONLY FOR THE FINAL STEP.")
+print()
+
+
 def test_model(model, model_name: str):
     from giorgio_baselines.data import test_data
+
+    if TRAINING:
+        test_data = train_data
 
     correct = 0
     for test_act, test_sentence in test_data:
