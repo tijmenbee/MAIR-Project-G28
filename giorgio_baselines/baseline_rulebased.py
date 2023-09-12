@@ -1,6 +1,8 @@
 import re
 from collections import Counter, defaultdict
 
+from giorgio_baselines.data import train_data
+
 RULES = [  # 90%
     ("phone", "request"),
     ("yes", "affirm"),
@@ -47,13 +49,9 @@ class BaselineRuleBased:
 
 
 def look_at_common_words(n: int = 30) -> None:
-    with open('../data/dialog_acts.dat', 'r') as f:
-        dialog_acts = f.readlines()
-
     word_dict = defaultdict(Counter)
 
-    for line in dialog_acts:
-        command, sentence = line.split(" ", 1)
+    for command, sentence in train_data:
         words = sentence.split()
         for word in words:
             word_dict[word][command] += 1
