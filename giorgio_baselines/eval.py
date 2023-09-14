@@ -1,7 +1,7 @@
 from baseline_majority import BaselineMajority
 from baseline_rulebased import BaselineRuleBased
 
-from giorgio_baselines.data import train_data
+from data import train_data
 
 
 TRAINING = True
@@ -15,7 +15,7 @@ print()
 
 
 def test_model(model, model_name: str):
-    from giorgio_baselines.data import test_data
+    from data import test_data
 
     if TRAINING:
         test_data = train_data
