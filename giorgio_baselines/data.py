@@ -7,4 +7,6 @@ data = [line.lower().strip().split(" ", maxsplit=1) for line in dialog_acts]
 
 train_data, test_data = train_test_split(data, test_size=0.15, random_state=42)
 
+train_data, dev_data = train_test_split(train_data, test_size=0.15, random_state=42)
+
 del data  # To avoid misusing original data.
