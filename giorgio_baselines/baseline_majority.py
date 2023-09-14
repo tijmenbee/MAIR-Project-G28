@@ -1,8 +1,9 @@
 from collections import Counter
+from typing import List
 
 
 class BaselineMajority:
-    def __init__(self, acts: list[str]):
+    def __init__(self, acts: List[str]):
         counts = Counter(acts)
         counts = sorted(counts.items(), key=lambda item: item[1], reverse=True)
 

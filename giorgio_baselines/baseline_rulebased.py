@@ -1,7 +1,8 @@
 import re
 from collections import Counter, defaultdict
+from typing import List
 
-from giorgio_baselines.data import train_data
+from data import train_data
 
 RULES = [  # >90%
     ("phone", "request"),
@@ -30,7 +31,7 @@ LESS_RULES = [  # >80%
 
 
 class BaselineRuleBased:
-    def __init__(self, acts: list[str]):
+    def __init__(self, acts: List[str]):
         counts = Counter(acts)
         counts = sorted(counts.items(), key=lambda item: item[1], reverse=True)
 
