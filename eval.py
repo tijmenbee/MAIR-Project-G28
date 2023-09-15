@@ -46,14 +46,8 @@ deduped_train_sentences = [sentence for _, sentence in deduped_train_data]
 baseline_majority = BaselineMajority(train_acts)
 test_model(baseline_majority, "BaselineMajority")
 
-deduped_baseline_majority = BaselineMajority(deduped_train_acts)
-test_model(deduped_baseline_majority, "DedupedBaselineMajority", deduped=True)
-
 baseline_rulebased = BaselineRuleBased(train_acts)
 test_model(baseline_rulebased, "BaselineRuleBased")
-
-deduped_baseline_rulebased = BaselineRuleBased(deduped_train_acts)
-test_model(deduped_baseline_rulebased, "DedupedBaselineRuleBased", deduped=True)
 
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model(feedforward_nn, "FeedForwardNN")

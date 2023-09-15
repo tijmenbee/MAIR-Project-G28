@@ -18,7 +18,7 @@ ACTS = [
     "thankyou",
 ]
 
-with open('../dialog_acts.dat', 'r') as f:
+with open('dialog_acts.dat', 'r') as f:
     dialog_acts = f.readlines()
 
 data = [tuple(line.lower().strip().split(" ", maxsplit=1)) for line in dialog_acts]
