@@ -2,7 +2,8 @@ from baseline_majority import BaselineMajority
 from baseline_rulebased import BaselineRuleBased
 
 from data import train_data, dev_data, deduped_train_data, deduped_dev_data
-from giorgio_baselines.feedforward_nn import FeedForwardNN
+from feedforward_nn import FeedForwardNN
+from logistic_regression import LogisticRegressionModel
 
 TRAINING = True
 
@@ -59,3 +60,9 @@ test_model(feedforward_nn, "FeedForwardNN")
 
 deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=4)
 test_model(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
+
+logistic_regression = LogisticRegressionModel(train_data)
+test_model(logistic_regression, "LogisticRegressionModel")
+
+deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
+test_model(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
