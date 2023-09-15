@@ -31,6 +31,7 @@ class FeedForwardNN:
         for i, label in enumerate(labels):
             one_hot_labels[i, label] = 1
 
+        # TODO add more layers? dropout?
         model = Sequential()
         model.add(Dense(H_LAYER_SIZE, activation='relu', input_shape=(VOCAB_SIZE,)))
         model.add(Dense(H_LAYER_SIZE, activation='relu'))
