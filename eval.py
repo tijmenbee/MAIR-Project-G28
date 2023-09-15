@@ -55,7 +55,7 @@ test_model_accuracy(baseline_rulebased, "BaselineRuleBased")
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
 
-deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=4)
+deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data)
 test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
