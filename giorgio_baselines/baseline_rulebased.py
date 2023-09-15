@@ -20,13 +20,12 @@ RULES = [  # >90%
     ("bye", "bye"),
 ]
 
-LESS_RULES = [  # >80%
+LESS_RULES = [  # ~80%
     ("phone", "request"),
     ("yes", "affirm"),
     ("address", "request"),
     ("thank", "thankyou"),
     ("about", "reqalts"),
-    ("sil", "null"),
 ]
 
 
@@ -42,12 +41,17 @@ class BaselineRuleBased:
         self.rules = RULES
         self.info = f"{len(self.rules)} rules"
 
-    def predict(self, sentence: str) -> str:
-        for rule, label in self.rules:
-            if re.search(rule, sentence):
-                return label
+    def predict(self, sentences: List[str]) -> List[str]:
+        labels = []
+        for sentence in sentences:
+            for rule, label in self.rules:
+                if re.search(rule, sentence):
+                    labels.append(label)
+                    break
+            else:
+                labels.append(self.majority_act)
 
-        return self.majority_act
+        return labels
 
 
 def look_at_common_words(n: int = 30) -> None:

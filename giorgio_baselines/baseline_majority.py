@@ -13,5 +13,5 @@ class BaselineMajority:
         self.majority_act = majority_act
         self.info = "majority act: \"inform\""
 
-    def predict(self, sentence: str) -> str:
-        return self.majority_act
+    def predict(self, sentences: List[str]) -> List[str]:
+        return [self.majority_act] * len(sentences)
