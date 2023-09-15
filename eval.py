@@ -15,7 +15,7 @@ else:
 print()
 
 
-def test_model(model, model_name: str, deduped=False):
+def test_model_accuracy(model, model_name: str, deduped=False):
     from data import test_data, deduped_test_data
 
     if TRAINING:
@@ -36,6 +36,9 @@ def test_model(model, model_name: str, deduped=False):
     del deduped_test_data
 
 
+# TODO evaluate on precision, recall, f1?
+
+
 train_acts = [act for act, _ in train_data]
 train_sentences = [sentence for _, sentence in train_data]
 
@@ -44,19 +47,19 @@ deduped_train_sentences = [sentence for _, sentence in deduped_train_data]
 
 
 baseline_majority = BaselineMajority(train_acts)
-test_model(baseline_majority, "BaselineMajority")
+test_model_accuracy(baseline_majority, "BaselineMajority")
 
 baseline_rulebased = BaselineRuleBased(train_acts)
-test_model(baseline_rulebased, "BaselineRuleBased")
+test_model_accuracy(baseline_rulebased, "BaselineRuleBased")
 
 feedforward_nn = FeedForwardNN(train_data, dev_data)
-test_model(feedforward_nn, "FeedForwardNN")
+test_model_accuracy(feedforward_nn, "FeedForwardNN")
 
 deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=4)
-test_model(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
+test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
-test_model(logistic_regression, "LogisticRegressionModel")
+test_model_accuracy(logistic_regression, "LogisticRegressionModel")
 
 deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
-test_model(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
+test_model_accuracy(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
