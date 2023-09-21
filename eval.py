@@ -2,6 +2,7 @@ from baseline_majority import BaselineMajority
 from baseline_rulebased import BaselineRuleBased
 
 from data import train_data, dev_data, deduped_train_data, deduped_dev_data
+from decision_tree import DecisionTree
 from feedforward_nn import FeedForwardNN
 from logistic_regression import LogisticRegressionModel
 import numpy as np
@@ -63,11 +64,21 @@ test_model_accuracy(baseline_rulebased, "BaselineRuleBased", False, True)
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
 
-deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data)
+deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=8)
 test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
 test_model_accuracy(logistic_regression, "LogisticRegressionModel", True, True)
 
 deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
+<<<<<<< HEAD
 test_model_accuracy(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
+=======
+test_model_accuracy(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
+
+decision_tree = DecisionTree(train_data)
+test_model_accuracy(decision_tree, "DecisionTree")
+
+deduped_decision_tree = DecisionTree(deduped_train_data)
+test_model_accuracy(deduped_decision_tree, "DedupedDecisionTree", deduped=True)
+>>>>>>> 022f9232a72b899a0fdea2a398630379e8e5e9d8
