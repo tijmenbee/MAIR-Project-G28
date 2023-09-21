@@ -13,8 +13,11 @@ KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
 
 KEYWORDS_DONTCARE = ["doesnt matter", "any", "dont care", "does not matter", "doesn't matter", "don't care", "do not care"]
 
-# todo solution for:
 
+# todo solution for: user: i dont care about the price range what about thai food
+#                       speech act: inform(pricerange=dontcare,food=thai)
+
+# todo solution for: no, I want spanish
 
 def inform_keyword_finder(sentence: str, type = None):
     
@@ -31,27 +34,21 @@ def inform_keyword_finder(sentence: str, type = None):
 
     for keyword in KEYWORDS_FOOD:
         for word in sentence.split():
-            x= Levenshtein.distance(keyword,word)
-            if x < 3:
+            if adjusted_Levenshtein(keyword, word) < 3:
                 food.append(keyword)
                 #inform_dict['errorFood'] = word
 
     for keyword in KEYWORDS_AREA:
         for word in sentence.split():
-            x= Levenshtein.distance(keyword,word)
             if keyword == 'centre':
-                if x < 3:
+                if adjusted_Levenshtein(keyword, word) < 3:
                     area.append(keyword)
                     #inform_dict['errorArea'] = word
-            else:
-                if x < 2:
-                    area.append(keyword)
-                    #inform_dict['errorArea'] = word
+            
 
     for keyword in KEYWORDS_PRICE:
         for word in sentence.split():
-            x= Levenshtein.distance(keyword,word)
-            if x < 3:
+            if adjusted_Levenshtein(keyword, word) < 3:
                 price.append(keyword)
                 #inform_dict['errorPrice'] = word
 
@@ -63,5 +60,10 @@ def inform_keyword_finder(sentence: str, type = None):
     return inform_dict
      
 
-#test_sentence = "i want spanish, i dont care about price. Also I want indien in city centre with a moderate price"
-#print(inform_keyword_finder(test_sentence, "pricerange"))
+def adjusted_Levenshtein(keyword, word):
+    if keyword[0] != word[0]:
+        return 10
+    return Levenshtein.distance(keyword[1:], word[1:])
+
+test_sentence = "i want spanish. Also I want indien in city centre with a price chap"
+print(inform_keyword_finder(test_sentence, "pricerange"))
