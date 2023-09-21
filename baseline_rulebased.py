@@ -64,7 +64,7 @@ class BaselineRuleBased:
         assert majority_act == "inform"
 
         self.majority_act = majority_act
-        self.rules = RULES
+        self.rules = RULES_MORE
         self.info = f"{len(self.rules)} rules"
 
     def predict(self, sentences: List[str]) -> List[str]:
