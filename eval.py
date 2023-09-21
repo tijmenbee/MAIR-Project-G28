@@ -59,15 +59,20 @@ baseline_majority = BaselineMajority(train_acts)
 test_model_accuracy(baseline_majority, "BaselineMajority")
 
 baseline_rulebased = BaselineRuleBased(train_acts)
+<<<<<<< Updated upstream
 test_model_accuracy(baseline_rulebased, "BaselineRuleBased", False, True)
+=======
+test_model_accuracy(baseline_rulebased, "BaselineRuleBased", False)
+>>>>>>> Stashed changes
 
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
 
-deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=8)
+deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data)
 test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
+<<<<<<< Updated upstream
 test_model_accuracy(logistic_regression, "LogisticRegressionModel", True, True)
 
 deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
@@ -82,3 +87,9 @@ test_model_accuracy(decision_tree, "DecisionTree")
 deduped_decision_tree = DecisionTree(deduped_train_data)
 test_model_accuracy(deduped_decision_tree, "DedupedDecisionTree", deduped=True)
 >>>>>>> 022f9232a72b899a0fdea2a398630379e8e5e9d8
+=======
+test_model_accuracy(logistic_regression, "LogisticRegressionModel", True)
+
+deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
+test_model_accuracy(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
+>>>>>>> Stashed changes
