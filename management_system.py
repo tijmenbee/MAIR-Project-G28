@@ -4,6 +4,8 @@ from typing import List, Optional, Dict
 
 from baseline_rulebased import BaselineRuleBased
 from data import train_data
+from inform_keywords import inform_keyword_finder
+from logistic_regression import LogisticRegressionModel
 
 
 @dataclass
@@ -52,7 +54,7 @@ class DialogState:
 
     def make_suggestion(self, restaurants: List[Restaurant]) -> None:
         suggestions = self.calculate_suggestions(restaurants)
-        if self.current_sugggestions_index >= len(suggestions) - 1:  # Suggestions exist
+        if suggestions and self.current_sugggestions_index < len(suggestions):  # Suggestions exist
             suggestion = suggestions[self.current_sugggestions_index]
             print(f"Here's a suggestion: {suggestion}")
             self.current_suggestion = suggestion
@@ -69,25 +71,24 @@ class DialogState:
 
         return suggestions
 
-    def ask_for_missing_info(self) -> str:
+    def ask_for_missing_info(self) -> None:
         if not self._pricerange:
-            return "What is your price range (cheap, moderate, expensive, or no preference)?"
+            print("What is your price range (cheap, moderate, expensive, or no preference)?")
         elif not self._area:
-            return "What area would you like to eat in (north, east, south, west, centre, or no preference)?"
+            print("What area would you like to eat in (north, east, south, west, centre, or no preference)?")
         elif not self._food:
-            return "What type of food would you like to eat (or no preference)? If you want a list of all possible " \
-                   "food types, say 'foodlist'."
+            print("What type of food would you like to eat (or no preference)? If you want a list of all possible food types, say 'foodlist'.")
         else:
-            return "I'm sorry, I don't understand. Could you repeat that?"  # Shouldn't happen!
+            print("I'm sorry, I don't understand. Could you repeat that?")  # Shouldn't happen!
 
-    def ask_for_confirmation(self) -> str:
+    def ask_for_confirmation(self) -> None:
         confirmation_str = "Please confirm the following (yes/no):\n"
 
         confirmation_str += f"Price range: {', '.join(self._pricerange)}\n"
         confirmation_str += f"Area: {', '.join(self._area)}\n"
         confirmation_str += f"Food: {', '.join(self._food)}\n"
 
-        return confirmation_str
+        print(confirmation_str)
 
 
 class DialogManager:
@@ -110,9 +111,12 @@ class DialogManager:
         extracted_info = self.extract_info(utterance)
 
         if act == "inform":
-            dialog_state.set_price_range(extracted_info["pricerange"])
-            dialog_state.set_area(extracted_info["area"])
-            dialog_state.set_food(extracted_info["food"])
+            if extracted_info["pricerange"]:
+                dialog_state.set_price_range(extracted_info["pricerange"])
+            if extracted_info["area"]:
+                dialog_state.set_area(extracted_info["area"])
+            if extracted_info["food"]:
+                dialog_state.set_food(extracted_info["food"])
 
             if dialog_state.can_make_suggestion():  # Enough info to make a suggestion
                 dialog_state.ask_for_confirmation()
@@ -161,19 +165,14 @@ class DialogManager:
             if not dialog_state.current_suggestion:
                 dialog_state.ask_for_missing_info()
 
-            changed_prefs = False
             if extracted_info["pricerange"]:
                 dialog_state.set_price_range(extracted_info["pricerange"])
-                changed_prefs = True
             if extracted_info["area"]:
                 dialog_state.set_area(extracted_info["area"])
-                changed_prefs = True
             if extracted_info["food"]:
                 dialog_state.set_food(extracted_info["food"])
-                changed_prefs = True
 
-            if not changed_prefs:  # User didn't provide any new prefs - give next suggestion
-                dialog_state.make_suggestion(self.all_restaurants)
+            dialog_state.make_suggestion(self.all_restaurants)
 
         if act == "bye":
             dialog_state.conversation_over = True
@@ -190,10 +189,9 @@ class DialogManager:
             dialog_state = self.transition(dialog_state, input("> "))
 
     def extract_info(self, user_input) -> Dict[str, List[str]]:
-        # TODO
-        pass
+        return inform_keyword_finder(user_input)
 
 
 if __name__ == "__main__":
-    manager = DialogManager(BaselineRuleBased([act for act, _ in train_data]))
+    manager = DialogManager(LogisticRegressionModel(train_data))
     manager.converse()
