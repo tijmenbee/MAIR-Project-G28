@@ -4,9 +4,35 @@ from typing import List
 
 from data import train_data
 
-RULES = [  # >90%
+RULES_MORE = [  # 93.1%
     ("phone", "request"),
-    ("yes", "affirm"),
+    ("address", "request"),
+    ("noise", "null"),
+    ("sil", "null"),
+    ("thank", "thankyou"),
+    ("about", "reqalts"),
+    ("code", "request"),
+    ("else", "reqalts"),
+    (r"\bno\b", "negate"),
+    ("unintelligible", "null"),
+    ("bye", "bye"),
+    (r"\bprice\b", "request"),  # 0.2%+
+    ("there", "reqalts"),  # 0.2%+
+    ("type", "request"),  # 0.2%+
+    ("right", "affirm"),  # 0.2%+
+    (r"\bdoes\b", "confirm"), # 0.2%+
+    ("hello", "hello"),  # 0.2%+
+    ("another", "reqalts"),  # 0.1%+
+    ("where", "request"),  # 0.2%+
+    ("system", "null"),  # 0.1%+
+    ("repeat", "repeat"),  # 0.2%+
+    ("next", "reqalts"),  # 0.1%+
+    (r"\bye", "affirm"),
+]
+
+RULES = [  # 91.2%
+    ("phone", "request"),
+    (r"\bye", "affirm"),
     ("address", "request"),
     ("noise", "null"),
     ("sil", "null"),
@@ -20,9 +46,9 @@ RULES = [  # >90%
     ("bye", "bye"),
 ]
 
-LESS_RULES = [  # ~80%
+RULES_LESS = [  # ~80%
     ("phone", "request"),
-    ("yes", "affirm"),
+    (r"\bye", "affirm"),
     ("address", "request"),
     ("thank", "thankyou"),
     ("about", "reqalts"),
