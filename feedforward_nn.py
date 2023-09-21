@@ -82,4 +82,6 @@ class FeedForwardNN:
 if __name__ == "__main__":
     from data import train_data, dev_data as d_data
 
-    FeedForwardNN(train_data, d_data)
+    n = FeedForwardNN(train_data, d_data)
+
+    print(n.predict(["um no preference"]))
