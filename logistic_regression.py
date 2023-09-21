@@ -24,3 +24,11 @@ class LogisticRegressionModel:
     def predict(self, sentences):
         X_test = self.vectorizer.transform(sentences)
         return self.fit.predict(X_test)
+
+
+if __name__ == "__main__":
+    from data import train_data, dev_data
+
+    n = LogisticRegressionModel(train_data)
+
+    print(n.predict(["no, i dont want spanish"]))
