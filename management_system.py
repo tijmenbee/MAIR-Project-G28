@@ -2,7 +2,6 @@ import csv
 from dataclasses import dataclass
 from typing import List, Optional, Dict
 
-from baseline_rulebased import BaselineRuleBased
 from data import train_data
 from inform_keywords import inform_keyword_finder
 from logistic_regression import LogisticRegressionModel
@@ -188,7 +187,8 @@ class DialogManager:
         while not dialog_state.conversation_over:
             dialog_state = self.transition(dialog_state, input("> "))
 
-    def extract_info(self, user_input) -> Dict[str, List[str]]:
+    @staticmethod
+    def extract_info(user_input) -> Dict[str, List[str]]:
         return inform_keyword_finder(user_input)
 
 

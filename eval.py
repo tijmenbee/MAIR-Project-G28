@@ -69,7 +69,6 @@ def test_model_accuracy(model, model_name: str, deduped=False):
     del deduped_test_data
 
 
-
 def test_model_precision(model, model_name: str, deduped=False):
     from data import test_data, deduped_test_data
     if TRAINING:
