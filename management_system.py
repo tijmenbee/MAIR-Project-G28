@@ -175,12 +175,12 @@ class DialogManager:
 
         if act == "bye":
             dialog_state.conversation_over = True
-            print("Goodbye! Thank you for using the restaurant recommender system.")
+            print("Goodbye! Thanks for using our restaurant recommender.")
 
         return dialog_state
 
     def converse(self):
-        print("Hello! Ask for resatuant sb ybla bla area price tell me stuff")
+        print("Hello! Welcome to our restaurant recommendation system!")
 
         dialog_state = DialogState()
         dialog_state.ask_for_missing_info()

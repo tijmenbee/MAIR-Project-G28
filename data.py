@@ -18,7 +18,4 @@ deduped_train_data, deduped_test_data = train_test_split(deduped_data, test_size
 
 deduped_train_data, deduped_dev_data = train_test_split(deduped_train_data, test_size=0.15, random_state=42)
 
-print(len(data))
-print(len(deduped_data))
-
 del data  # To avoid misusing original data.

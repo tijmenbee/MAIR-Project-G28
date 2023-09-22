@@ -40,10 +40,9 @@ def inform_keyword_finder(sentence: str, type = None):
 
     for keyword in KEYWORDS_AREA:
         for word in sentence.split():
-            if keyword == 'centre':
-                if adjusted_Levenshtein(keyword, word) < 3:
-                    area.append(keyword)
-                    #inform_dict['errorArea'] = word
+            if adjusted_Levenshtein(keyword, word) < 3:
+                area.append(keyword)
+                #inform_dict['errorArea'] = word
             
 
     for keyword in KEYWORDS_PRICE:
@@ -65,5 +64,7 @@ def adjusted_Levenshtein(keyword, word):
         return 10
     return Levenshtein.distance(keyword[1:], word[1:])
 
-test_sentence = "i want spanish. Also I want indien in city centre with a price chap"
-print(inform_keyword_finder(test_sentence, "pricerange"))
+
+if __name__ == "__main__":
+    test_sentence = "i want spanish. Also I want indien in city centre with a price chap"
+    print(inform_keyword_finder(test_sentence, "pricerange"))

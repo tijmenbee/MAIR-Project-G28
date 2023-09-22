@@ -79,7 +79,6 @@ def test_model_precision(model, model_name: str, deduped=False):
 # TODO evaluate on precision, recall, f1?
 
 
-
 train_acts = [act for act, _ in train_data]
 train_sentences = [sentence for _, sentence in train_data]
 
