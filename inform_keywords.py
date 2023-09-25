@@ -58,10 +58,13 @@ def inform_keyword_finder(sentence: str, type = None):
     if dontcare:
         inform_dict[type] = 'dontcare'
     return inform_dict
-     
+
+
+words_set = set(words.words())
+
 
 def adjusted_Levenshtein(keyword, word):
-    if word in words.words() and word != keyword:
+    if word in words_set and word != keyword:
         return 10
     if keyword[0] != word[0]:
         return 10
