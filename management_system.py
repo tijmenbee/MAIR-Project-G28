@@ -89,6 +89,20 @@ class DialogState:
 
         print(confirmation_str)
 
+    def update_preferences(self, extracted_preferences) -> bool:
+        updated = False
+        if extracted_preferences["pricerange"]:
+            self.set_price_range(extracted_preferences["pricerange"])
+            updated = True
+        if extracted_preferences["area"]:
+            self.set_area(extracted_preferences["area"])
+            updated = True
+        if extracted_preferences["food"]:
+            self.set_food(extracted_preferences["food"])
+            updated = True
+
+        return updated
+
 
 class DialogManager:
     def __init__(self, act_classifier):
@@ -107,75 +121,59 @@ class DialogManager:
     def transition(self, dialog_state: DialogState, utterance: str) -> DialogState:
         act = self.act_classifier.predict([utterance])[0]
 
-        extracted_info = self.extract_info(utterance)
+        extracted_preferences = self.extract_preferences(utterance)
+
+        print("act: ", act)
+        print("current prefs: ", dialog_state._pricerange, dialog_state._area, dialog_state._food)
+        print("extracted prefs: ", extracted_preferences)
+
+        if act == "bye":
+            dialog_state.conversation_over = True
+            print("Goodbye! Thanks for using our restaurant recommender.")
 
         if act == "inform":
-            if extracted_info["pricerange"]:
-                dialog_state.set_price_range(extracted_info["pricerange"])
-            if extracted_info["area"]:
-                dialog_state.set_area(extracted_info["area"])
-            if extracted_info["food"]:
-                dialog_state.set_food(extracted_info["food"])
+            dialog_state.update_preferences(extracted_preferences)
 
             if dialog_state.can_make_suggestion():  # Enough info to make a suggestion
                 dialog_state.ask_for_confirmation()
+
             else:  # Not enough info to make a suggestion
                 dialog_state.ask_for_missing_info()
+
         if act in ["affirm", "ack"]:
+
             if dialog_state.can_make_suggestion():  # Confirmation of prefs is affirmed.
                 dialog_state.make_suggestion(self.all_restaurants)
+
             else:  # Not enough info to make a suggestion - keep asking.
                 dialog_state.ask_for_missing_info()
-        if act in ["negate", "deny"]:
-            if not dialog_state.current_suggestion:  # Confirmation of prefs is denied.
-                changed_prefs = False  # If user provided new prefs, we change them already.
-                if extracted_info["pricerange"]:
-                    dialog_state.set_price_range(extracted_info["pricerange"])
-                    changed_prefs = True
-                if extracted_info["area"]:
-                    dialog_state.set_area(extracted_info["area"])
-                    changed_prefs = True
-                if extracted_info["food"]:
-                    dialog_state.set_food(extracted_info["food"])
-                    changed_prefs = True
 
-                if changed_prefs:
+        if act in ["negate", "deny"]:
+            preferences_changed = dialog_state.update_preferences(extracted_preferences)
+
+            if not dialog_state.current_suggestion:  # Confirmation of prefs is denied.
+                if preferences_changed:
                     dialog_state.make_suggestion(self.all_restaurants)
                 else:  # User didn't provide any new prefs - ask for them.
                     print("Sorry for misunderstanding - please provide your preferences again.")
-            else:  # User denies suggestion
-                changed_prefs = False  # If user provided new prefs, we change them already.
-                if extracted_info["pricerange"]:
-                    dialog_state.set_price_range(extracted_info["pricerange"])
-                    changed_prefs = True
-                if extracted_info["area"]:
-                    dialog_state.set_area(extracted_info["area"])
-                    changed_prefs = True
-                if extracted_info["food"]:
-                    dialog_state.set_food(extracted_info["food"])
-                    changed_prefs = True
 
-                if not changed_prefs:  # User didn't provide any new prefs - give next suggestion
+            else:  # User denies suggestion
+                if not preferences_changed:  # User didn't provide any new prefs - give next suggestion
                     dialog_state.add_excluded_restaurant(dialog_state.current_suggestion)
 
                 dialog_state.make_suggestion(self.all_restaurants)
 
         if act in ["reqalts", "reqmore"]:
-            if not dialog_state.current_suggestion:
+            if not dialog_state.can_make_suggestion():  # Not enough info to make a suggestion
                 dialog_state.ask_for_missing_info()
 
-            if extracted_info["pricerange"]:
-                dialog_state.set_price_range(extracted_info["pricerange"])
-            if extracted_info["area"]:
-                dialog_state.set_area(extracted_info["area"])
-            if extracted_info["food"]:
-                dialog_state.set_food(extracted_info["food"])
+            preferences_changed = dialog_state.update_preferences(extracted_preferences)
+            if preferences_changed:
+                dialog_state.ask_for_confirmation()
+            else:
+                dialog_state.make_suggestion(self.all_restaurants)
 
-            dialog_state.make_suggestion(self.all_restaurants)
-
-        if act == "bye":
-            dialog_state.conversation_over = True
-            print("Goodbye! Thanks for using our restaurant recommender.")
+        print(f"new prefs: {dialog_state._pricerange=}, {dialog_state._area=}, {dialog_state._food=}")
 
         return dialog_state
 
@@ -188,7 +186,7 @@ class DialogManager:
             dialog_state = self.transition(dialog_state, input("> "))
 
     @staticmethod
-    def extract_info(user_input) -> Dict[str, List[str]]:
+    def extract_preferences(user_input) -> Dict[str, List[str]]:
         return inform_keyword_finder(user_input)
 
 

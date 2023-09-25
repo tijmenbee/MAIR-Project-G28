@@ -1,6 +1,7 @@
 import pandas as pd
 import re
-import Levenshtein 
+import Levenshtein
+from nltk.corpus import words
 
 file = pd.read_csv("restaurant_info.csv")
 
@@ -60,6 +61,8 @@ def inform_keyword_finder(sentence: str, type = None):
      
 
 def adjusted_Levenshtein(keyword, word):
+    if word in words.words() and word != keyword:
+        return 10
     if keyword[0] != word[0]:
         return 10
     return Levenshtein.distance(keyword[1:], word[1:])

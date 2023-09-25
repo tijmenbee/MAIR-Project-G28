@@ -16,7 +16,6 @@ else:
 print()
 
 
-
 def test_model_accuracy(model, model_name: str, deduped=False):
     from data import test_data, deduped_test_data
     from collections import Counter
@@ -41,7 +40,7 @@ def test_model_accuracy(model, model_name: str, deduped=False):
         else:
             FP.append(test_acts[i])
             FN.append(pred_acts[i])
-    
+
     TP = Counter(TP)
     FN = Counter(FN)
     FP = Counter(FP)
@@ -95,7 +94,7 @@ test_model_accuracy(baseline_rulebased, "BaselineRuleBased")
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
 
-deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=8)
+deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=4)
 test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
