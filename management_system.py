@@ -1,5 +1,6 @@
 import csv
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Optional, Dict
 
 from data import train_data
@@ -21,6 +22,13 @@ class Restaurant:
     postcode: str
 
 
+class PreferenceRequest(Enum):
+    AREA = "area"
+    PRICERANGE = "pricerange"
+    FOOD = "food"
+    ANY = None
+
+
 class DialogState:
     def __init__(self):
         self._pricerange: List[str] = []
@@ -31,6 +39,7 @@ class DialogState:
         self.current_suggestion: Optional[Restaurant] = None
         self.current_sugggestions_index = 0
         self.system_message = None
+        self.current_preference_request: PreferenceRequest = PreferenceRequest.ANY
 
     def output_system_message(self) -> None:
         if self.system_message:
@@ -60,7 +69,11 @@ class DialogState:
     def can_make_suggestion(self) -> bool:
         return bool(self._pricerange) and bool(self._area) and bool(self._food)
 
-    def make_suggestion(self, restaurants: List[Restaurant]) -> None:
+    def try_to_make_suggestion(self, restaurants: List[Restaurant]) -> None:
+        if not self.can_make_suggestion():
+            self.ask_for_missing_info()
+            return
+
         suggestions = self.calculate_suggestions(restaurants)
         if suggestions and self.current_sugggestions_index < len(suggestions):  # Suggestions exist
             suggestion = suggestions[self.current_sugggestions_index]
@@ -82,12 +95,15 @@ class DialogState:
     def ask_for_missing_info(self) -> None:
         if not self._pricerange:
             self.system_message = "What is your price range (cheap, moderate, expensive, or no preference)?"
+            self.current_preference_request = PreferenceRequest.PRICERANGE
         elif not self._area:
             self.system_message = "What area would you like to eat in (north, east, south, west, centre, " \
                                  "or no preference)?"
+            self.current_preference_request = PreferenceRequest.AREA
         elif not self._food:
             self.system_message = "What type of food would you like to eat (or no preference)? If you want a list of " \
                                  "all possible food types, say 'foodlist'."
+            self.current_preference_request = PreferenceRequest.FOOD
         else:
             self.system_message = "I'm sorry, I don't understand. Could you repeat that?"  # Shouldn't happen!
 
@@ -132,7 +148,7 @@ class DialogManager:
     def transition(self, dialog_state: DialogState, utterance: str) -> DialogState:
         act = self.act_classifier.predict([utterance])[0]
 
-        extracted_preferences = self.extract_preferences(utterance)
+        extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request)
 
         print("act: ", act)
         print("current prefs: ", dialog_state._pricerange, dialog_state._area, dialog_state._food)
@@ -153,11 +169,7 @@ class DialogManager:
 
         if act in ["affirm", "ack"]:
 
-            if dialog_state.can_make_suggestion():  # Confirmation of prefs is affirmed.
-                dialog_state.make_suggestion(self.all_restaurants)
-
-            else:  # Not enough info to make a suggestion - keep asking.
-                dialog_state.ask_for_missing_info()
+            dialog_state.try_to_make_suggestion(self.all_restaurants)
 
         if act in ["negate", "deny"]:
             preferences_changed = dialog_state.update_preferences(extracted_preferences)
@@ -166,7 +178,7 @@ class DialogManager:
                 if not dialog_state.can_make_suggestion():
                     dialog_state.ask_for_missing_info()
                 elif preferences_changed:
-                    dialog_state.make_suggestion(self.all_restaurants)
+                    dialog_state.try_to_make_suggestion(self.all_restaurants)
                 else:  # User didn't provide any new prefs - ask for them.
                     dialog_state.system_message = "Sorry for misunderstanding - please provide your preferences again."
 
@@ -174,17 +186,14 @@ class DialogManager:
                 if not preferences_changed:  # User didn't provide any new prefs - give next suggestion
                     dialog_state.add_excluded_restaurant(dialog_state.current_suggestion)
 
-                dialog_state.make_suggestion(self.all_restaurants)
+                dialog_state.try_to_make_suggestion(self.all_restaurants)
 
         if act in ["reqalts", "reqmore"]:
-            if not dialog_state.can_make_suggestion():  # Not enough info to make a suggestion
-                dialog_state.ask_for_missing_info()
-
             preferences_changed = dialog_state.update_preferences(extracted_preferences)
-            if preferences_changed:
+            if preferences_changed and dialog_state.can_make_suggestion():
                 dialog_state.ask_for_confirmation()
             else:
-                dialog_state.make_suggestion(self.all_restaurants)
+                dialog_state.try_to_make_suggestion(self.all_restaurants)
 
         print(f"new prefs: {dialog_state._pricerange=}, {dialog_state._area=}, {dialog_state._food=}")
 
@@ -201,8 +210,8 @@ class DialogManager:
             dialog_state.output_system_message()
 
     @staticmethod
-    def extract_preferences(user_input) -> Dict[str, List[str]]:
-        return inform_keyword_finder(user_input)
+    def extract_preferences(user_input, preference_type: PreferenceRequest) -> Dict[str, List[str]]:
+        return inform_keyword_finder(user_input, preference_type.value)
 
 
 if __name__ == "__main__":

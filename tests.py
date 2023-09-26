@@ -42,9 +42,9 @@ class TestDialogManager(unittest.TestCase):
         self.mock_classifier.predict.return_value = ["affirm"]
         dialog_state = DialogState()
         dialog_state.can_make_suggestion = MagicMock(return_value=True)
-        dialog_state.make_suggestion = MagicMock()
+        dialog_state.try_to_make_suggestion = MagicMock()
         self.dialog_manager.transition(dialog_state, "yes")
-        dialog_state.make_suggestion.assert_called()
+        dialog_state.try_to_make_suggestion.assert_called()
 
     # ... more tests
 
