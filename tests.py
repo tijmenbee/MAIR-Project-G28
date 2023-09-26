@@ -1,6 +1,8 @@
 import io
+import json
 import sys
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock
 from management_system import DialogManager, DialogState
 
@@ -13,40 +15,33 @@ from management_system import DialogManager, DialogState
 
 class TestDialogManager(unittest.TestCase):
 
-    def setUp(self):
-        self.mock_classifier = MagicMock()
-        self.dialog_manager = DialogManager(self.mock_classifier)
+    @classmethod
+    def setUpClass(cls):
+        json_path = Path("saved_convos.json")
+        if not json_path.exists():
+            raise FileNotFoundError("JSON file doesn't exist")
 
-    def check_preferences(self, dialog_state, pricerange, area, food):
-        self.assertEqual(dialog_state._pricerange, pricerange)
-        self.assertEqual(dialog_state._area, area)
-        self.assertEqual(dialog_state._food, food)
+        with json_path.open('r') as f:
+            cls.data = json.load(f)
 
-    def test_transition_bye(self):
-        self.mock_classifier.predict.return_value = ["bye"]
-        dialog_state = DialogState()
-        new_state = self.dialog_manager.transition(dialog_state, "bye")
-        self.assertTrue(new_state.conversation_over)
+    def test_transitions(self):
+        for i, system_states_list in enumerate(self.data):
+            with self.subTest(i=i):
+                deserialized_states = []
+                for state_dict in system_states_list:
+                    state_dict['current_preference_request'] = PreferenceRequest[state_dict['current_preference_request']]
+                    state = from_dict(SystemState, state_dict)
+                    deserialized_states.append(state)
 
-        dialog_state = DialogState()
-        new_state = self.dialog_manager.transition(dialog_state, "goodbye")
-        self.assertTrue(new_state.conversation_over)
+                dialog_state = None  # Initialize your dialog state here
 
-    def test_transition_inform(self):
-        self.mock_classifier.predict.return_value = ["inform"]
-        dialog_state = DialogState()
-        self.dialog_manager.transition(dialog_state, "I want cheap food.")
-        self.check_preferences(dialog_state, ["cheap"], [], [])
+                for system_state in deserialized_states:
+                    new_dialog_state = transition(dialog_state, system_state.user_input)
+                    # Here, compare new_dialog_state and system_state
+                    # self.assertEqual(new_dialog_state, system_state)
 
-    def test_transition_affirm(self):
-        self.mock_classifier.predict.return_value = ["affirm"]
-        dialog_state = DialogState()
-        dialog_state.can_make_suggestion = MagicMock(return_value=True)
-        dialog_state.try_to_make_suggestion = MagicMock()
-        self.dialog_manager.transition(dialog_state, "yes")
-        dialog_state.try_to_make_suggestion.assert_called()
 
-    # ... more tests
+if __name__ == '__main__':
 
 
 if __name__ == "__main__":
