@@ -37,7 +37,7 @@ class DialogState:
         self._excluded_restaurants: List[Restaurant] = []
         self.conversation_over = False
         self.current_suggestion: Optional[Restaurant] = None
-        self.current_sugggestions_index = 0
+        self.current_suggestions_index = 0
         self.system_message = None
         self.current_preference_request: PreferenceRequest = PreferenceRequest.ANY
 
@@ -48,23 +48,23 @@ class DialogState:
 
     def set_price_range(self, pricerange: List[str]) -> None:
         self._pricerange = pricerange
-        self.current_sugggestions_index = 0
+        self.current_suggestions_index = 0
 
     def set_area(self, area: List[str]) -> None:
         self._area = area
-        self.current_sugggestions_index = 0
+        self.current_suggestions_index = 0
 
     def set_food(self, food: List[str]) -> None:
         self._food = food
-        self.current_sugggestions_index = 0
+        self.current_suggestions_index = 0
 
     def add_excluded_restaurant(self, restaurant: Restaurant) -> None:
         self._excluded_restaurants.append(restaurant)
-        self.current_sugggestions_index = 0
+        self.current_suggestions_index = 0
 
     def set_excluded_restaurants(self, excluded_restaurants: List[Restaurant]) -> None:
         self._excluded_restaurants = excluded_restaurants
-        self.current_sugggestions_index = 0
+        self.current_suggestions_index = 0
 
     def can_make_suggestion(self) -> bool:
         return bool(self._pricerange) and bool(self._area) and bool(self._food)
@@ -75,11 +75,11 @@ class DialogState:
             return
 
         suggestions = self.calculate_suggestions(restaurants)
-        if suggestions and self.current_sugggestions_index < len(suggestions):  # Suggestions exist
-            suggestion = suggestions[self.current_sugggestions_index]
+        if suggestions and self.current_suggestions_index < len(suggestions):  # Suggestions exist
+            suggestion = suggestions[self.current_suggestions_index]
             self.system_message = f"Here's a suggestion: {suggestion}"
             self.current_suggestion = suggestion
-            self.current_sugggestions_index += 1
+            self.current_suggestions_index += 1
         else:  # No suggestions exist
             self.system_message = "Sorry, there's no suggestions given your requirements. Please try something else."
 
