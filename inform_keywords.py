@@ -1,6 +1,10 @@
 import pandas as pd
 import re
 import Levenshtein
+import nltk
+
+nltk.download('words')
+
 from nltk.corpus import words
 
 file = pd.read_csv("restaurant_info.csv")
@@ -12,11 +16,10 @@ KEYWORDS_FOOD = file["food"].unique()
 
 KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
 
-KEYWORDS_DONTCARE = ["doesnt matter", "any", "dont care", "does not matter", "doesn't matter", "don't care", "do not care"]
-
+REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care)", r"\bany"]
 
 # todo solution for: user: i dont care about the price range what about thai food
-#                       speech act: inform(pricerange=dontcare,food=thai)
+#                       speech act: inform(pricerange=any,food=thai)
 
 # todo solution for: no, I want spanish
 
@@ -25,13 +28,13 @@ def inform_keyword_finder(sentence: str, type = None):
     area = list()
     price = list()
     food = list()
-    dontcare = False
+    any = False
 
     inform_dict = {}
 
-    for keyword in KEYWORDS_DONTCARE:
-        if re.search(keyword, sentence):
-            dontcare = True     
+    for regex in REGEX_ANY:
+        if re.search(regex, sentence):
+            any = True
 
     for keyword in KEYWORDS_FOOD:
         for word in sentence.split():
@@ -55,8 +58,8 @@ def inform_keyword_finder(sentence: str, type = None):
     inform_dict['area'] = area
     inform_dict['food'] = food
     inform_dict['pricerange'] = price
-    if dontcare:
-        inform_dict[type] = 'dontcare'
+    if any:
+        inform_dict[type] = ['any']
     return inform_dict
 
 

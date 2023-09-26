@@ -127,7 +127,7 @@ class DialogManager:
     def transition(self, dialog_state: DialogState, utterance: str) -> DialogState:
         act = self.act_classifier.predict([utterance])[0]
 
-        extracted_preferences = self.extract_preferences(utterance)
+        extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request)
         for key, value in extracted_preferences.items():
             for inst in value:
                 if inst[1] == False:
