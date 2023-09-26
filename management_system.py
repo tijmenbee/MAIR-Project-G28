@@ -1,6 +1,8 @@
 import csv
-from dataclasses import dataclass
+import json
+from dataclasses import dataclass, asdict
 from enum import Enum
+from pathlib import Path
 from typing import List, Optional, Dict
 
 from data import train_data
@@ -27,6 +29,39 @@ class PreferenceRequest(Enum):
     PRICERANGE = "pricerange"
     FOOD = "food"
     ANY = None
+
+
+@dataclass(frozen=True)
+class SystemState:
+    system_message: Optional[str]
+    user_input: str
+    act: str
+    pricerange: List[str]
+    area: List[str]
+    food: List[str]
+    excluded_restaurants: List[Restaurant]
+    current_suggestion: Optional[str]
+    current_preference_request: PreferenceRequest
+
+
+def save_conversation(states: List[SystemState]) -> None:
+    json_path = Path("saved_convos.json")
+    if json_path.exists():
+        with json_path.open('r') as f:
+            data = json.load(f)
+    else:
+        data = []
+
+    new_entry = []
+    for state in states:
+        state_dict = asdict(state)
+        state_dict['current_preference_request'] = state.current_preference_request.name
+        new_entry.append(state_dict)
+
+    data.append(new_entry)
+
+    with json_path.open('w') as f:
+        json.dump(data, f, indent=2)
 
 
 class DialogState:
@@ -177,16 +212,16 @@ class DialogManager:
             if not dialog_state.current_suggestion:  # Confirmation of prefs is denied.
                 if not dialog_state.can_make_suggestion():
                     dialog_state.ask_for_missing_info()
-                elif preferences_changed:
-                    dialog_state.try_to_make_suggestion(self.all_restaurants)
+                elif preferences_changed:  # Preferences changed - make new suggestion
+                    dialog_state.ask_for_confirmation()
                 else:  # User didn't provide any new prefs - ask for them.
                     dialog_state.system_message = "Sorry for misunderstanding - please provide your preferences again."
 
             else:  # User denies suggestion
                 if not preferences_changed:  # User didn't provide any new prefs - give next suggestion
                     dialog_state.add_excluded_restaurant(dialog_state.current_suggestion)
-
-                dialog_state.try_to_make_suggestion(self.all_restaurants)
+                else:
+                    dialog_state.ask_for_confirmation()
 
         if act in ["reqalts", "reqmore"]:
             preferences_changed = dialog_state.update_preferences(extracted_preferences)
@@ -202,12 +237,33 @@ class DialogManager:
     def converse(self):
         print("Hello! Welcome to our restaurant recommendation system!")
 
+        system_states = []
+
         dialog_state = DialogState()
         dialog_state.ask_for_missing_info()
+        sys_message = dialog_state.system_message
         dialog_state.output_system_message()
         while not dialog_state.conversation_over:
-            dialog_state = self.transition(dialog_state, input("> "))
+            user_input = input("> ").lower().strip()
+            system_states.append(SystemState(
+                system_message=sys_message,
+                user_input=user_input,
+                act=self.act_classifier.predict([user_input])[0],
+                pricerange=dialog_state._pricerange,
+                area=dialog_state._area,
+                food=dialog_state._food,
+                excluded_restaurants=dialog_state._excluded_restaurants,
+                current_suggestion=dialog_state.current_suggestion,
+                current_preference_request=dialog_state.current_preference_request
+            ))
+            dialog_state = self.transition(dialog_state, user_input)
+            sys_message = dialog_state.system_message
             dialog_state.output_system_message()
+
+        print("Conversation over.")
+        print("Save conversation into test file? (y/n)")
+        if input("> ").lower().strip() == "y":
+            save_conversation(system_states)
 
     @staticmethod
     def extract_preferences(user_input, preference_type: PreferenceRequest) -> Dict[str, List[str]]:
