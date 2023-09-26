@@ -64,9 +64,6 @@ def test_model_accuracy(model, model_name: str, deduped=False):
 
     print(f"{model_name} accuracy: {correct / len(testing_data) * 100:.1f}% , weighted F1: {weighted_f1} ({model.info})")
 
-    del test_data  # No leakage!
-    del deduped_test_data
-
 
 def test_model_precision(model, model_name: str, deduped=False):
     from data import test_data, deduped_test_data
