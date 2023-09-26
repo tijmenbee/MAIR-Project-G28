@@ -105,6 +105,9 @@ class DialogState:
             updated = True
 
         return updated
+    
+    def confirm_levenshtein(self, inst) -> None:
+        print(f"Did you mean {inst[0]}?")
 
 
 class DialogManager:
@@ -125,6 +128,10 @@ class DialogManager:
         act = self.act_classifier.predict([utterance])[0]
 
         extracted_preferences = self.extract_preferences(utterance)
+        for key, value in extracted_preferences.items():
+            for inst in value:
+                if inst[1] == False:
+                    dialog_state.confirm_levenshtein(inst)
 
         print("act: ", act)
         print("current prefs: ", dialog_state._pricerange, dialog_state._area, dialog_state._food)

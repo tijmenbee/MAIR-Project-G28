@@ -36,20 +36,20 @@ def inform_keyword_finder(sentence: str, type = None):
     for keyword in KEYWORDS_FOOD:
         for word in sentence.split():
             if adjusted_Levenshtein(keyword, word) < 3:
-                food.append(keyword)
+                food.append((keyword, keyword == word))
                 #inform_dict['errorFood'] = word
 
     for keyword in KEYWORDS_AREA:
         for word in sentence.split():
             if adjusted_Levenshtein(keyword, word) < 3:
-                area.append(keyword)
+                area.append((keyword, keyword == word))
                 #inform_dict['errorArea'] = word
             
 
     for keyword in KEYWORDS_PRICE:
         for word in sentence.split():
             if adjusted_Levenshtein(keyword, word) < 3:
-                price.append(keyword)
+                price.append((keyword, keyword == word))
                 #inform_dict['errorPrice'] = word
 
     inform_dict['area'] = area
