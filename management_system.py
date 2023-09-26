@@ -21,7 +21,6 @@ class Restaurant:
     postcode: str
 
 
-
 class DialogState:
     def __init__(self):
         self._pricerange: List[str] = []
