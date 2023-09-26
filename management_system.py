@@ -12,10 +12,14 @@ class Restaurant:
     name: str
     pricerange: str
     area: str
+    crowdedness: str
+    length_of_stay: str
     food: str
+    food_quality: str
     phone: str
     address: str
     postcode: str
+
 
 
 class DialogState:
