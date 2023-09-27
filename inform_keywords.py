@@ -16,7 +16,7 @@ KEYWORDS_FOOD = file["food"].unique()
 
 KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
 
-REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care)", r"\bany"]
+REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care|mind)", r"\bany"]
 
 # todo solution for: user: i dont care about the price range what about thai food
 #                       speech act: inform(pricerange=any,food=thai)
@@ -59,7 +59,7 @@ def inform_keyword_finder(sentence: str, type = None):
     inform_dict['food'] = food
     inform_dict['pricerange'] = price
     if any:
-        inform_dict[type] = ['any']
+        inform_dict[type] = [('any', True)]
     return inform_dict
 
 

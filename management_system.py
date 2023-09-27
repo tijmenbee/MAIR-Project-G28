@@ -1,4 +1,5 @@
 import csv
+import itertools
 import json
 from dataclasses import dataclass, asdict
 from enum import Enum
@@ -120,8 +121,8 @@ Postcode: {suggestion.postcode}
         suggestions = self.calculate_suggestions(restaurants)
         if suggestions and self.current_suggestions_index < len(suggestions):  # Suggestions exist
             suggestion = suggestions[self.current_suggestions_index]
-            self.system_message = self.suggestion_string()
             self.current_suggestion = suggestion
+            self.system_message = self.suggestion_string()
             self.current_suggestions_index += 1
         else:  # No suggestions exist
             self.system_message = "Sorry, there's no suggestions given your requirements. Please try something else."
@@ -129,8 +130,12 @@ Postcode: {suggestion.postcode}
     def calculate_suggestions(self, restaurants: List[Restaurant]) -> List[Restaurant]:
         suggestions = []
         for r in restaurants:
-            if (r.pricerange in self._pricerange and r.area in self._area and r.food in self._food and r not in
-                    self._excluded_restaurants):
+            if (
+                    (r.pricerange in self._pricerange or "any" in self._pricerange) and
+                    (r.area in self._area or "any" in self._area) and
+                    (r.food in self._food or "any" in self._food) and
+                    r not in self._excluded_restaurants
+            ):
                 suggestions.append(r)
 
         return suggestions
@@ -173,8 +178,8 @@ Postcode: {suggestion.postcode}
 
         return updated
 
-    def confirm_levenshtein(self, inst) -> None:
-        print(f"Did you mean {inst[0]}?")
+    def confirm_levenshtein(self, word: str) -> None:
+        self.system_message = f"Did you mean {word}?"
 
 
 class DialogManager:
@@ -195,10 +200,13 @@ class DialogManager:
         act = self.act_classifier.predict([utterance])[0]
 
         extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request)
-        for key, value in extracted_preferences.items():
-            for inst in value:
-                if inst[1] == False:
-                    dialog_state.confirm_levenshtein(inst)
+
+        # TODO below doesnt do anything rn - have to think about how to do it nicely.
+        for word, is_correct in itertools.chain(*extracted_preferences.values()):
+            if not is_correct:
+                dialog_state.confirm_levenshtein(word)
+
+        extracted_preferences = {k: [v[0] for v in value] for k, value in extracted_preferences.items()}
 
         print("act: ", act)
         print("current prefs: ", dialog_state._pricerange, dialog_state._area, dialog_state._food)
