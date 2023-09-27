@@ -5,6 +5,7 @@ from data import train_data, dev_data, deduped_train_data, deduped_dev_data
 from decision_tree import DecisionTree
 from feedforward_nn import FeedForwardNN
 from logistic_regression import LogisticRegressionModel
+from rulebased_nn_merge import RuleBasedNN
 
 TRAINING = True
 
@@ -93,6 +94,9 @@ test_model_accuracy(feedforward_nn, "FeedForwardNN")
 
 deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=4)
 test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
+
+rulebased_nn_merged = RuleBasedNN(deduped_train_data, deduped_dev_data, epochs=4)
+test_model_accuracy(rulebased_nn_merged, "DedupedRuleBasedNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
 test_model_accuracy(logistic_regression, "LogisticRegressionModel")
