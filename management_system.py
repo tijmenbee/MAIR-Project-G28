@@ -81,7 +81,7 @@ class DialogState:
         self.previous_act = None
         self.typo_list = []
 
-    def output_system_message(self, caps=True) -> None:
+    def output_system_message(self, caps=False) -> None:
         if self.system_message:
             if caps:
                 print(self.system_message.upper())
