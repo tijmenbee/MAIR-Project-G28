@@ -6,6 +6,8 @@ from decision_tree import DecisionTree
 from feedforward_nn import FeedForwardNN
 from logistic_regression import LogisticRegressionModel
 from rulebased_nn_merge import RuleBasedNN
+import numpy as np
+import pandas as pd
 
 TRAINING = True
 
@@ -17,7 +19,7 @@ else:
 print()
 
 
-def test_model_accuracy(model, model_name: str, deduped=False):
+def test_model_accuracy(model, model_name: str, deduped=False, show_act_accuracy=False):
     from data import test_data, deduped_test_data
     from collections import Counter
     if TRAINING:
@@ -65,6 +67,13 @@ def test_model_accuracy(model, model_name: str, deduped=False):
 
     print(f"{model_name} accuracy: {correct / len(testing_data) * 100:.1f}% , weighted F1: {weighted_f1} ({model.info})")
 
+    if show_act_accuracy is True:
+        pred_acts_occurences = pd.value_counts(pred_acts)
+        test_acts_occurences = pd.value_counts(test_acts)
+    
+        for act in range(len(pred_acts_occurences.index)):
+            print(f"{pred_acts_occurences.index[act]}: {1-abs((pred_acts_occurences.values[act]/test_acts_occurences.values[act])-1)}")
+
 
 def test_model_precision(model, model_name: str, deduped=False):
     from data import test_data, deduped_test_data
@@ -75,9 +84,9 @@ def test_model_precision(model, model_name: str, deduped=False):
 
 # TODO evaluate on precision, recall, f1?
 
-
 train_acts = [act for act, _ in train_data]
 train_sentences = [sentence for _, sentence in train_data]
+
 
 deduped_train_acts = [act for act, _ in deduped_train_data]
 deduped_train_sentences = [sentence for _, sentence in deduped_train_data]
@@ -87,25 +96,28 @@ baseline_majority = BaselineMajority(train_acts)
 test_model_accuracy(baseline_majority, "BaselineMajority")
 
 baseline_rulebased = BaselineRuleBased(train_acts)
-test_model_accuracy(baseline_rulebased, "BaselineRuleBased")
+test_model_accuracy(baseline_rulebased, "BaselineRuleBased", False, True)
 
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
 
-deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=4)
+deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=8)
 test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
 
 rulebased_nn_merged = RuleBasedNN(deduped_train_data, deduped_dev_data, epochs=4)
 test_model_accuracy(rulebased_nn_merged, "DedupedRuleBasedNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
-test_model_accuracy(logistic_regression, "LogisticRegressionModel")
+test_model_accuracy(logistic_regression, "LogisticRegressionModel", True, True)
 
 deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
+
 test_model_accuracy(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
+
 
 decision_tree = DecisionTree(train_data)
 test_model_accuracy(decision_tree, "DecisionTree")
 
 deduped_decision_tree = DecisionTree(deduped_train_data)
 test_model_accuracy(deduped_decision_tree, "DedupedDecisionTree", deduped=True)
+
