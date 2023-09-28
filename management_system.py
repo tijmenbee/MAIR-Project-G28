@@ -76,10 +76,17 @@ class DialogState:
         self.current_suggestions_index = 0
         self.system_message = None
         self.current_preference_request: PreferenceRequest = PreferenceRequest.ANY
+        self.previous_preferences = None
+        self.confirm_typo = False
+        self.previous_act = None
+        self.typo_list = []
 
-    def output_system_message(self) -> None:
+    def output_system_message(self, caps=True) -> None:
         if self.system_message:
-            print(self.system_message)
+            if caps:
+                print(self.system_message.upper())
+            else:
+                print(self.system_message)
 
     def set_price_range(self, pricerange: List[str]) -> None:
         self._pricerange = pricerange
@@ -178,8 +185,9 @@ Postcode: {suggestion.postcode}
 
         return updated
 
-    def confirm_levenshtein(self, word: str) -> None:
-        self.system_message = f"Did you mean {word}?"
+    def confirm_levenshtein(self) -> None:
+        self.system_message = f"Did you mean the following: {' and '.join(self.typo_list)}?"
+        self.typo_list = []
 
 
 class DialogManager:
@@ -204,7 +212,21 @@ class DialogManager:
         # TODO below doesnt do anything rn - have to think about how to do it nicely.
         for word, is_correct in itertools.chain(*extracted_preferences.values()):
             if not is_correct:
-                dialog_state.confirm_levenshtein(word)
+                dialog_state.typo_list.append(word)
+        for word, is_correct in itertools.chain(*extracted_preferences.values()):
+            if not is_correct:
+                dialog_state.confirm_typo = True
+                dialog_state.previous_preferences = extracted_preferences
+                dialog_state.previous_act = act
+                dialog_state.confirm_levenshtein()
+                return dialog_state
+
+        if dialog_state.confirm_typo:
+            if act == "affirm":
+                extracted_preferences = dialog_state.previous_preferences
+                act = dialog_state.previous_act
+                dialog_state.confirm_typo = False
+        
 
         extracted_preferences = {k: [v[0] for v in value] for k, value in extracted_preferences.items()}
 
@@ -288,11 +310,11 @@ class DialogManager:
         return dialog_state
 
     def converse(self):
-        print("Hello! Welcome to our restaurant recommendation system!")
-
         system_states = []
 
         dialog_state = DialogState()
+        dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system!"
+        dialog_state.output_system_message()
         dialog_state.ask_for_missing_info()
         sys_message = dialog_state.system_message
         dialog_state.output_system_message()
