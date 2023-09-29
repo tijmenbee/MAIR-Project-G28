@@ -27,8 +27,8 @@ class LogisticRegressionModel:
 
 
 if __name__ == "__main__":
-    from data import train_data, dev_data
+    from data import train_data, dev_data, deduped_train_data
 
-    n = LogisticRegressionModel(train_data)
+    n = LogisticRegressionModel(deduped_train_data)
 
-    print(n.predict(["no, i dont want spanish"]))
+    print(n.predict(["yeah"]))
