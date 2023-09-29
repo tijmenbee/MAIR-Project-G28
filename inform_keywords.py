@@ -70,7 +70,6 @@ def inform_keyword_finder(sentence: str, type = None):
                 inform_dict[tempType] =  [('any', True)]
             else: 
                 any = True
-                
 
     for word in sentence.split():
         for keyword in KEYWORDS_FOOD:
@@ -96,9 +95,6 @@ def inform_keyword_finder(sentence: str, type = None):
                 inform_dict['pricerange'] = price
                 break
 
-
-
-    
     if any:
         inform_dict[type] = [('any', True)]
     return inform_dict

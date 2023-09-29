@@ -166,13 +166,13 @@ Postcode: {suggestion.postcode}
 
     def update_preferences(self, extracted_preferences) -> bool:
         updated = False
-        if extracted_preferences["pricerange"]:
+        if extracted_preferences.get("pricerange"):
             self.set_price_range(extracted_preferences["pricerange"])
             updated = True
-        if extracted_preferences["area"]:
+        if extracted_preferences.get("area"):
             self.set_area(extracted_preferences["area"])
             updated = True
-        if extracted_preferences["food"]:
+        if extracted_preferences.get("food"):
             self.set_food(extracted_preferences["food"])
             updated = True
 
@@ -365,10 +365,10 @@ class DialogManager:
             sys_message = dialog_state.system_message
             dialog_state.output_system_message()
 
-        print("Conversation over.")
-        print("Save conversation into test file? (y/n)")
-        if input("> ").lower().strip() == "y":
-            save_conversation(system_states)
+        # print("Conversation over.")
+        # print("Save conversation into test file? (y/n)")
+        # if input("> ").lower().strip() == "y":
+        #     save_conversation(system_states)
 
     @staticmethod
     def extract_preferences(user_input, preference_type: PreferenceRequest) -> Dict[str, List[str]]:
@@ -377,6 +377,5 @@ class DialogManager:
 
 if __name__ == "__main__":
     manager = DialogManager(LogisticRegressionModel(deduped_train_data))
-    # should not be needed? also for the other defs
-    additional_requirements = manager.ask_for_additional_requirements()
     manager.converse()
+    additional_requirements = manager.ask_for_additional_requirements()
