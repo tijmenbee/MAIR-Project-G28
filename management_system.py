@@ -11,10 +11,6 @@ from inform_keywords import inform_keyword_finder
 from logistic_regression import LogisticRegressionModel
 
 
-LEVENSHTEIN_DISTANCE = 3
-BOOLMULTIPLE_INFORM = True # Inform statements can have multiple preferences
-
-
 @dataclass
 class Restaurant:
     name: str
@@ -200,6 +196,58 @@ class DialogManager:
 
         self.foodlist = set(r.food for r in self.all_restaurants)
 
+    def ask_for_additional_requirements(self):
+        user_requirements = {}
+        # Rephrase to just asking if they have one requirement?
+        user_input = input("Do you have any additional requirements? (yes/no): ").lower()
+        if user_input == 'yes':
+            # Can specify only one requirement now
+            requirement = input("Please specify your additional requirement (romantic, children, touristic, or assigned seats): ")
+            user_requirements['consequent'] = requirement
+
+        return user_requirements
+
+    def apply_inference_rules(self, suggestions, user_requirements):
+        consequent = user_requirements.get('consequent')
+        if not consequent:
+            return suggestions
+
+        matched_suggestions = []
+        for restaurant in suggestions:
+            if self.inference_rules(restaurant, consequent):
+                matched_suggestions.append(restaurant)
+        # Returns restaurants including the user's additional requirement
+        return matched_suggestions
+
+    def inference_rules(self, suggestions, user_requirements):
+        consequent = user_requirements.get('consequent')
+    # If the additional requirement is touristic
+        if consequent == 'touristic':
+            if 'pricerange' in suggestions and 'food_quality' in suggestions and suggestions['pricerange'] == 'cheap' and suggestions['food_quality'] == 'good':
+                return True
+        elif consequent == 'romantic':
+            if 'crowdedness' in suggestions and suggestions['crowdedness'] == 'busy':
+                return False
+        elif consequent == 'romantic':
+            if 'length_of_stay' in suggestions and suggestions['length_of_stay'] == 'long stay':
+                return True
+        elif consequent == 'touristic':
+            if 'food' in suggestions and suggestions['food'] == 'romanian':
+                return False
+        elif consequent == 'children':
+            if 'length_of_stay' in suggestions and suggestions['length_of_stay'] == 'short stay':
+                return False
+        elif consequent == 'assigned seats':
+            if 'crowdedness' in suggestions and suggestions['crowdedness'] == 'busy':
+                return True
+        # EXTRA
+        # This one may be conflicting with pricerange? 
+        elif consequent == 'high quality food':
+            if 'food_quality' in suggestions and suggestions['food_quality'] == 'high quality':
+                return True
+        else:
+            return False
+
     def transition(self, dialog_state: DialogState, utterance: str) -> DialogState:
         act = self.act_classifier.predict([utterance])[0]
 
@@ -329,4 +377,6 @@ class DialogManager:
 
 if __name__ == "__main__":
     manager = DialogManager(LogisticRegressionModel(deduped_train_data))
+    # should not be needed? also for the other defs
+    additional_requirements = manager.ask_for_additional_requirements()
     manager.converse()
