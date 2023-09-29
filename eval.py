@@ -1,7 +1,7 @@
 from baseline_majority import BaselineMajority
 from baseline_rulebased import BaselineRuleBased
 
-from data import train_data, dev_data, deduped_train_data, deduped_dev_data
+from data import train_data, dev_data, deduped_train_data, deduped_dev_data, ACTS
 from decision_tree import DecisionTree
 from feedforward_nn import FeedForwardNN
 from logistic_regression import LogisticRegressionModel
@@ -51,28 +51,25 @@ def test_model_accuracy(model, model_name: str, deduped=False, show_act_accuracy
     correct = sum(pred_act == test_act for pred_act, test_act in zip(pred_acts, test_acts))
 
     F1_dict = {}
-    for act in list(acts):
-        if TP[act] == 0:
+    for act in ACTS:
+        if TP.get(act, 0) == 0:
             precision = 0
             recall = 0
             F1 = 0
+            accuracy = 0
         else:
             precision = TP[act]/(TP[act]+FP[act])
             recall = TP[act]/(TP[act]+FN[act])
             F1 = 2*(precision*recall)/(precision+recall)
             accuracy = TP[act]/(TP[act]+FN[act]+FP[act])
-        #print(act, ", precision: ", precision,  ", recall: ", recall,  ", F1: ", F1,  ", accuracy: ", accuracy)
+        print(f"{act} -- precision: {precision:.2f}, recall: {recall:.2f}, F1: {F1:.2f}, accuracy: {accuracy:.2f}")
         F1_dict[act] = F1
     weighted_f1 = sum(F1_dict[key]*acts.get(key, 0) for key in acts) / len(test_acts)
+    macro_f1 = sum(F1_dict[key] for key in acts) / len(acts)
 
-    print(f"{model_name} accuracy: {correct / len(testing_data) * 100:.1f}% , weighted F1: {weighted_f1} ({model.info})")
-
-    if show_act_accuracy is True:
-        pred_acts_occurences = pd.value_counts(pred_acts)
-        test_acts_occurences = pd.value_counts(test_acts)
-    
-        for act in range(len(pred_acts_occurences.index)):
-            print(f"{pred_acts_occurences.index[act]}: {1-abs((pred_acts_occurences.values[act]/test_acts_occurences.values[act])-1)}")
+    print(f"\n^^^^^^^^^^^^^^^^^\n{model_name} accuracy: {correct / len(testing_data):.2f}, weighted F1:"
+          f" {weighted_f1:.2f}, macro F1: "
+          f"{macro_f1:.2f} ({model.info})\n\n")
 
 
 def test_model_precision(model, model_name: str, deduped=False):
@@ -120,4 +117,3 @@ test_model_accuracy(decision_tree, "DecisionTree")
 
 deduped_decision_tree = DecisionTree(deduped_train_data)
 test_model_accuracy(deduped_decision_tree, "DedupedDecisionTree", deduped=True)
-
