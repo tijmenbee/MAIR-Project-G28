@@ -80,10 +80,13 @@ class DialogState:
         self.confirm_typo = False
         self.previous_act = None
         self.typo_list = []
+        self.config_capsLock = False
+        self.config_typoCheck = False
+        
 
-    def output_system_message(self, caps=False) -> None:
+    def output_system_message(self) -> None:
         if self.system_message:
-            if caps:
+            if self.config_capsLock:
                 print(self.system_message.upper())
             else:
                 print(self.system_message)
@@ -209,23 +212,24 @@ class DialogManager:
 
         extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request)
 
-        # TODO below doesnt do anything rn - have to think about how to do it nicely.
-        for word, is_correct in itertools.chain(*extracted_preferences.values()):
-            if not is_correct:
-                dialog_state.typo_list.append(word)
-        for word, is_correct in itertools.chain(*extracted_preferences.values()):
-            if not is_correct:
-                dialog_state.confirm_typo = True
-                dialog_state.previous_preferences = extracted_preferences
-                dialog_state.previous_act = act
-                dialog_state.confirm_levenshtein()
-                return dialog_state
-
-        if dialog_state.confirm_typo:
-            if act == "affirm":
-                extracted_preferences = dialog_state.previous_preferences
-                act = dialog_state.previous_act
-                dialog_state.confirm_typo = False
+        if dialog_state.config_typoCheck:
+            # Checks if typo's are spotted
+            for word, is_correct in itertools.chain(*extracted_preferences.values()):
+                if not is_correct:
+                    dialog_state.typo_list.append(word)
+            for word, is_correct in itertools.chain(*extracted_preferences.values()):
+                if not is_correct:
+                    dialog_state.confirm_typo = True
+                    dialog_state.previous_preferences = extracted_preferences
+                    dialog_state.previous_act = act
+                    dialog_state.confirm_levenshtein()
+                    return dialog_state
+            # Checks if typo's are confirmed
+            if dialog_state.confirm_typo:
+                if act == "affirm":
+                    extracted_preferences = dialog_state.previous_preferences
+                    act = dialog_state.previous_act
+                    dialog_state.confirm_typo = False
         
 
         extracted_preferences = {k: [v[0] for v in value] for k, value in extracted_preferences.items()}
@@ -313,13 +317,15 @@ class DialogManager:
         system_states = []
 
         dialog_state = DialogState()
-        dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system!"
+        dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
         dialog_state.output_system_message()
         dialog_state.ask_for_missing_info()
         sys_message = dialog_state.system_message
         dialog_state.output_system_message()
         while not dialog_state.conversation_over:
             user_input = input("> ").lower().strip()
+            if user_input == "-config":
+                manager.config(dialog_state)
             system_states.append(SystemState(
                 system_message=sys_message,
                 user_input=user_input,
@@ -339,6 +345,22 @@ class DialogManager:
         print("Save conversation into test file? (y/n)")
         if input("> ").lower().strip() == "y":
             save_conversation(system_states)
+
+    def config(self, dialog_state: DialogState):
+        setconfig = True
+        while setconfig:
+            print(f"Current settings: \n capslock: \t {str(dialog_state.config_capsLock)} \n typochecker: \t {str(dialog_state.config_typoCheck)}")
+            text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\" \n To go back, type \'return\'")
+            splitinput = str(text).split()
+            if splitinput[0] == "return":
+                setconfig = False
+            if splitinput[0] == "capslock":
+                dialog_state.config_capsLock = (splitinput[1].lower() == 'true')
+            if splitinput[0] == "typochecker":
+                dialog_state.config_typoCheck = (splitinput[1].lower() == 'true')
+        return
+        dialog_state.config_typoCheck
+        dialog_state.config_capsLock
 
     @staticmethod
     def extract_preferences(user_input, preference_type: PreferenceRequest) -> Dict[str, List[str]]:
