@@ -1,13 +1,14 @@
 import csv
 import itertools
 import json
+import re
 from dataclasses import dataclass, asdict
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 
 from data import train_data, deduped_train_data
-from inform_keywords import inform_keyword_finder
+from inform_keywords import inform_keyword_finder, adjusted_Levenshtein
 from logistic_regression import LogisticRegressionModel
 
 
@@ -76,6 +77,7 @@ class DialogState:
         self.current_suggestions_index = 0
         self.system_message = None
         self.current_preference_request: PreferenceRequest = PreferenceRequest.ANY
+        self.extra_requirements_suggestions = []
 
     def output_system_message(self) -> None:
         if self.system_message:
@@ -101,14 +103,19 @@ class DialogState:
         self._excluded_restaurants = excluded_restaurants
         self.current_suggestions_index = 0
 
-    def suggestion_string(self) -> str:
-        suggestion = self.current_suggestion
-        return f"""Here's a suggestion: {suggestion.name}!
+    @staticmethod
+    def suggestion_string(suggestion: Restaurant, ask_for_additional=True) -> str:
+        suggestion_str = f"""Here's a suggestion: {suggestion.name}!
 It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food.
 Phone number: {suggestion.phone}
 Address: {suggestion.address}
-Postcode: {suggestion.postcode}
-"""
+Postcode: {suggestion.postcode}"""
+
+        if ask_for_additional:
+            suggestion_str += ("\n(if you want to check for additional requirements (e.g. romantic, children, "
+                               "touristic, assigned seats), say 'additional requirements')")
+
+        return suggestion_str
 
     def can_make_suggestion(self) -> bool:
         return bool(self._pricerange) and bool(self._area) and bool(self._food)
@@ -122,7 +129,7 @@ Postcode: {suggestion.postcode}
         if suggestions and self.current_suggestions_index < len(suggestions):  # Suggestions exist
             suggestion = suggestions[self.current_suggestions_index]
             self.current_suggestion = suggestion
-            self.system_message = self.suggestion_string()
+            self.system_message = self.suggestion_string(self.current_suggestion)
             self.current_suggestions_index += 1
         else:  # No suggestions exist
             self.system_message = "Sorry, there's no suggestions given your requirements. Please try something else."
@@ -146,11 +153,11 @@ Postcode: {suggestion.postcode}
             self.current_preference_request = PreferenceRequest.PRICERANGE
         elif not self._area:
             self.system_message = "What area would you like to eat in (north, east, south, west, centre, " \
-                                 "or no preference)?"
+                                  "or no preference)?"
             self.current_preference_request = PreferenceRequest.AREA
         elif not self._food:
             self.system_message = "What type of food would you like to eat (or no preference)? If you want a list of " \
-                                 "all possible food types, say 'foodlist'."
+                                  "all possible food types, say 'foodlist'."
             self.current_preference_request = PreferenceRequest.FOOD
         else:
             self.system_message = "I'm sorry, I don't understand. Could you repeat that?"  # Shouldn't happen!
@@ -183,11 +190,11 @@ Postcode: {suggestion.postcode}
 
 
 class Description:
-    def __init__(self, true, message):
-        self.true = true
-        self.message = message
+    def __init__(self, rule_satisfied, reasoning):
+        self.rule_satisfied = rule_satisfied
+        self.reasoning = reasoning
 
-        
+
 class DialogManager:
     def __init__(self, act_classifier):
         self.act_classifier = act_classifier
@@ -202,55 +209,16 @@ class DialogManager:
 
         self.foodlist = set(r.food for r in self.all_restaurants)
 
-
-    def ask_for_additional_requirements(self):
-        user_requirements = {}
-        # Rephrase to just asking if they have one requirement?
-        user_input = input("Do you have any additional requirements? (yes/no): ").lower()
-        if user_input == 'yes':
-            # Can specify only one requirement now
-            requirement = input("Please specify your additional requirement (romantic, children, touristic, or assigned seats): ")
-            user_requirements['consequent'] = requirement
-
-        return user_requirements
-
-    def apply_inference_rules(self, suggestions, user_requirements):
-        consequent = user_requirements.get('consequent')
-        if not consequent:
-            return suggestions
-
-        matched_suggestions = []
-        for restaurant in suggestions:
-            if self.inference_rules(restaurant, consequent):
-                matched_suggestions.append(restaurant)
-        # Returns restaurants including the user's additional requirement
-        return matched_suggestions
-
-    def inference_rules(self, suggestions, user_requirements):
-        consequent = user_requirements.get('consequent')
-    # If the additional requirement is touristic
-        if consequent == 'touristic':
-            if 'pricerange' in suggestions and 'food_quality' in suggestions and suggestions['pricerange'] == 'cheap' and suggestions['food_quality'] == 'good':
-                return Description(True, "a cheap restaurant with good food attracts tourists")
-        elif consequent == 'romantic':
-            if 'crowdedness' in suggestions and suggestions['crowdedness'] == 'busy':
-                return Description(False, "a busy restaurant is not romantic")
-        elif consequent == 'romantic':
-            if 'length_of_stay' in suggestions and suggestions['length_of_stay'] == 'long stay':
-                return Description(True, "spending a long time in a restaurant is romantic")
-        elif consequent == 'touristic':
-            if 'food' in suggestions and suggestions['food'] == 'romanian':
-                return Description(False, "Romanian cuisine is unknown for most tourists and they prefer familiar food")
-        elif consequent == 'children':
-            if 'length_of_stay' in suggestions and suggestions['length_of_stay'] == 'short stay':
-                return Description(False, "spending a long time is not advised when taking children")
-        elif consequent == 'assigned seats':
-            if 'crowdedness' in suggestions and suggestions['crowdedness'] == 'busy':
-                return Description(True, "in a busy restaurant the waiter decides where you sit")
-        else:
-            return False
-
     def transition(self, dialog_state: DialogState, utterance: str) -> DialogState:
+        # We keep the implementation for the dialog system and the reasoning component separate. If a suggestion is
+        # made, we inform the user that they can ask for additional requirements. If they do, we leave the dialog system
+        # (which implements 1b), and move to the reasoning component (which implements 1c).
+        if adjusted_Levenshtein("additional requirements", utterance) < 3:
+            dialog_state.extra_requirements_suggestions = dialog_state.calculate_suggestions(self.all_restaurants)
+            dialog_state.system_message = ""
+            dialog_state.conversation_over = True
+            return dialog_state
+
         act = self.act_classifier.predict([utterance])[0]
 
         extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request)
@@ -286,7 +254,6 @@ class DialogManager:
                 dialog_state.ask_for_missing_info()
 
         if act in ["affirm", "ack"]:
-
             dialog_state.try_to_make_suggestion(self.all_restaurants)
 
         if act in ["negate", "deny"]:
@@ -325,7 +292,7 @@ class DialogManager:
 
         if act == "request":
             if dialog_state.current_suggestion:
-                dialog_state.system_message = dialog_state.suggestion_string()
+                dialog_state.system_message = dialog_state.suggestion_string(dialog_state.current_suggestion)
             else:
                 dialog_state.system_message = ("Sorry, I don't have a suggestion right now. Please provide more "
                                                "information about your preferences.")
@@ -340,6 +307,36 @@ class DialogManager:
         print(f"new prefs: {dialog_state._pricerange=}, {dialog_state._area=}, {dialog_state._food=}")
 
         return dialog_state
+
+    def get_extra_requirements_suggestions(self, suggestions: List[Restaurant], consequent: str) -> List[Tuple[
+        Restaurant, str]]:
+        matched_suggestions = []
+        for restaurant in suggestions:
+            if description := self.apply_inference_rules(restaurant, consequent):
+                if description.rule_satisfied:
+                    matched_suggestions.append((restaurant, description.reasoning))
+
+        return matched_suggestions
+
+    def apply_inference_rules(self, suggestion: Restaurant, consequent: str) -> Optional[Description]:
+        if consequent == 'touristic':
+            if suggestion.pricerange == 'cheap' and suggestion.food_quality == 'good':
+                return Description(True, "a cheap restaurant with good food attracts tourists")
+            if suggestion.food == 'romanian':
+                return Description(False, "Romanian cuisine is unknown for most tourists and they prefer familiar food")
+        elif consequent == 'romantic':
+            if suggestion.crowdedness == 'busy':
+                return Description(False, "a busy restaurant is not romantic")
+            if suggestion.length_of_stay == 'long stay':
+                return Description(True, "spending a long time in a restaurant is romantic")
+        elif consequent == 'children':
+            if suggestion.length_of_stay == 'short stay':
+                return Description(False, "spending a long time is not advised when taking children")
+        elif consequent == 'assigned seats':
+            if suggestion.crowdedness == 'busy':
+                return Description(True, "in a busy restaurant the waiter decides where you sit")
+        else:
+            raise ValueError(f"Invalid consequent: {consequent}")
 
     def converse(self):
         print("Hello! Welcome to our restaurant recommendation system!")
@@ -367,6 +364,26 @@ class DialogManager:
             sys_message = dialog_state.system_message
             dialog_state.output_system_message()
 
+        if dialog_state.extra_requirements_suggestions:
+            consequent = ""
+            while not (m := re.search(r"(romantic|children|touristic|assigned seats)", consequent)):
+                consequent = input(
+                    "Please specify your additional requirement (romantic, children, touristic, or assigned "
+                    "seats):\n")
+
+            consequent = m.group(1)
+
+            suggestions = self.get_extra_requirements_suggestions(dialog_state.extra_requirements_suggestions, consequent)
+
+            if not suggestions:
+                print("Sorry, there are no suggestions given your additional requirements.")
+            else:
+                # return a random suggestion
+                print(f"Here's a suggestion: "
+                      f"{DialogState.suggestion_string(suggestions[0][0], ask_for_additional=False)}.\n"
+                      f"It's {consequent} because {suggestions[0][1]}.")
+
+
         # print("Conversation over.")
         # print("Save conversation into test file? (y/n)")
         # if input("> ").lower().strip() == "y":
@@ -380,4 +397,3 @@ class DialogManager:
 if __name__ == "__main__":
     manager = DialogManager(LogisticRegressionModel(deduped_train_data))
     manager.converse()
-    additional_requirements = manager.ask_for_additional_requirements()
