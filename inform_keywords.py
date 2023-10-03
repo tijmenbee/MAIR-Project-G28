@@ -14,7 +14,15 @@ KEYWORDS_AREA = file["area"].unique()
 KEYWORDS_PRICE = file["pricerange"].unique()
 KEYWORDS_FOOD = file["food"].unique()
 
+FOOD_WORDS = ["food", "type"]
+PRICE_WORDS = ["price","pricerange","money"]
+AREA_WORDS = ["part", "town", "city", "location"]
+
+
 KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
+
+LEVENSHTEIN_DISTANCE = 3
+
 
 REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care|mind)", r"\bany"]
 
@@ -34,30 +42,63 @@ def inform_keyword_finder(sentence: str, type = None):
 
     for regex in REGEX_ANY:
         if re.search(regex, sentence):
-            any = True
+            anyLocation = sentence.find(re.search(regex, sentence).group(0))
+            smallest_distance = 999
+            
+            for word in FOOD_WORDS:
+                if sentence.find(word) == -1:
+                    continue
+                if abs(sentence.find(word)-anyLocation) < smallest_distance:
+                    smallest_distance = abs(sentence.find(word)-anyLocation)
+                    tempType = 'food'
 
-    for keyword in KEYWORDS_FOOD:
-        for word in sentence.split():
-            if adjusted_Levenshtein(keyword, word) < 3:
+            for word in AREA_WORDS:
+                if sentence.find(word) == -1:
+                    continue
+                if abs(sentence.find(word)-anyLocation) < smallest_distance:
+                    smallest_distance = abs(sentence.find(word)-anyLocation)
+                    tempType = 'area'
+
+            for word in PRICE_WORDS:
+                if sentence.find(word) == -1:
+                    continue
+                if abs(sentence.find(word)-anyLocation) < smallest_distance:
+                    smallest_distance = abs(sentence.find(word)-anyLocation)
+                    tempType = 'pricerange'
+            print(tempType)
+            if smallest_distance != 999:
+                inform_dict[tempType] =  [('any', True)]
+            else: 
+                any = True
+                
+
+    for word in sentence.split():
+        for keyword in KEYWORDS_FOOD:
+            if adjusted_Levenshtein(keyword, word) < LEVENSHTEIN_DISTANCE:
                 food.append((keyword, keyword == word))
                 #inform_dict['errorFood'] = word
-
-    for keyword in KEYWORDS_AREA:
-        for word in sentence.split():
-            if adjusted_Levenshtein(keyword, word) < 3:
+                inform_dict['food'] = food
+                break
+    
+    for word in sentence.split():
+        for keyword in KEYWORDS_AREA:
+            if adjusted_Levenshtein(keyword, word) < LEVENSHTEIN_DISTANCE:
                 area.append((keyword, keyword == word))
                 #inform_dict['errorArea'] = word
+                inform_dict['area'] = area
+                break
             
-
-    for keyword in KEYWORDS_PRICE:
-        for word in sentence.split():
-            if adjusted_Levenshtein(keyword, word) < 3:
+    for word in sentence.split():
+        for keyword in KEYWORDS_PRICE:
+            if adjusted_Levenshtein(keyword, word) < LEVENSHTEIN_DISTANCE:
                 price.append((keyword, keyword == word))
                 #inform_dict['errorPrice'] = word
+                inform_dict['pricerange'] = price
+                break
 
-    inform_dict['area'] = area
-    inform_dict['food'] = food
-    inform_dict['pricerange'] = price
+
+
+    
     if any:
         inform_dict[type] = [('any', True)]
     return inform_dict
@@ -75,5 +116,5 @@ def adjusted_Levenshtein(keyword, word):
 
 
 if __name__ == "__main__":
-    test_sentence = "i want spanish. Also I want indien in city centre with a price chap"
+    test_sentence = "I dont care about the price.just give me italien food in any location"
     print(inform_keyword_finder(test_sentence, "pricerange"))
