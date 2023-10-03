@@ -350,21 +350,29 @@ class DialogManager:
 
     def apply_inference_rules(self, suggestion: Restaurant, consequent: str) -> Optional[Description]:
         if consequent == 'touristic':
-            if suggestion.pricerange == 'cheap' and suggestion.food_quality == 'good':
-                return Description(True, "a cheap restaurant with good food attracts tourists")
+            if suggestion.pricerange == 'cheap' and suggestion.food_quality == 'good food':
+                return Description(True, "because a cheap restaurant with good food attracts tourists")
+            if suggestion.pricerange != 'cheap' and suggestion.food_quality != 'good food':
+                return Description(False, "because this restaurant usually does not attract tourists")
             if suggestion.food == 'romanian':
-                return Description(False, "Romanian cuisine is unknown for most tourists and they prefer familiar food")
+                return Description(False, "because Romanian cuisine is unknown for most tourists and they prefer familiar food")
         elif consequent == 'romantic':
-            if suggestion.crowdedness == 'busy':
-                return Description(False, "a busy restaurant is not romantic")
             if suggestion.length_of_stay == 'long stay':
-                return Description(True, "spending a long time in a restaurant is romantic")
+                return Description(True, "because spending a long time in a restaurant is romantic")
+            if suggestion.crowdedness == 'busy':
+                return Description(False, "because a busy restaurant is not romantic")
+            elif suggestion.crowdedness == 'quiet':
+                return Description(True, "a quiet restaurant is romantic")
         elif consequent == 'children':
             if suggestion.length_of_stay == 'short stay':
-                return Description(False, "spending a long time is not advised when taking children")
+                return Description(False, "friendly because spending a long time is not advised when taking children")
+            else:
+                return Description(True, "friendly because you are able to spend a long time here")
         elif consequent == 'assigned seats':
             if suggestion.crowdedness == 'busy':
-                return Description(True, "in a busy restaurant the waiter decides where you sit")
+                return Description(True, "because in a busy restaurant the waiter decides where you sit")
+            else:
+                return Description(False, "because in a quiet restaurant the waiter doesn't have to decide where you sit")
         else:
             raise ValueError(f"Invalid consequent: {consequent}")
 
@@ -413,7 +421,7 @@ class DialogManager:
                 # return a random suggestion
                 print(f"Here's a suggestion: "
                       f"{DialogState.suggestion_string(suggestions[0][0], ask_for_additional=False)}.\n"
-                      f"It's {consequent} because {suggestions[0][1]}.")
+                      f"It's {consequent} {suggestions[0][1]}.")
 
 
         # print("Conversation over.")
