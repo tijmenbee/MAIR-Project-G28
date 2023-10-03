@@ -44,6 +44,7 @@ def inform_keyword_finder(sentence: str, type = None):
         if re.search(regex, sentence):
             anyLocation = sentence.find(re.search(regex, sentence).group(0))
             smallest_distance = 999
+            tempType = None
             
             for word in FOOD_WORDS:
                 if sentence.find(word) == -1:
@@ -65,12 +66,11 @@ def inform_keyword_finder(sentence: str, type = None):
                 if abs(sentence.find(word)-anyLocation) < smallest_distance:
                     smallest_distance = abs(sentence.find(word)-anyLocation)
                     tempType = 'pricerange'
-            print(tempType)
-            if smallest_distance != 999:
+
+            if smallest_distance != 999 and tempType:
                 inform_dict[tempType] =  [('any', True)]
             else: 
                 any = True
-                
 
     for word in sentence.split():
         for keyword in KEYWORDS_FOOD:
@@ -96,9 +96,6 @@ def inform_keyword_finder(sentence: str, type = None):
                 inform_dict['pricerange'] = price
                 break
 
-
-
-    
     if any:
         inform_dict[type] = [('any', True)]
     return inform_dict

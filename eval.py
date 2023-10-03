@@ -19,7 +19,7 @@ else:
 print()
 
 
-def test_model_accuracy(model, model_name: str, deduped=False, show_act_accuracy=False):
+def test_model_accuracy(model, model_name: str, deduped=False):
     from data import test_data, deduped_test_data
     from collections import Counter
     if TRAINING:
@@ -93,7 +93,7 @@ baseline_majority = BaselineMajority(train_acts)
 test_model_accuracy(baseline_majority, "BaselineMajority")
 
 baseline_rulebased = BaselineRuleBased(train_acts)
-test_model_accuracy(baseline_rulebased, "BaselineRuleBased", False, True)
+test_model_accuracy(baseline_rulebased, "BaselineRuleBased", False)
 
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
@@ -105,7 +105,7 @@ rulebased_nn_merged = RuleBasedNN(deduped_train_data, deduped_dev_data, epochs=4
 test_model_accuracy(rulebased_nn_merged, "DedupedRuleBasedNN", deduped=True)
 
 logistic_regression = LogisticRegressionModel(train_data)
-test_model_accuracy(logistic_regression, "LogisticRegressionModel", True, True)
+test_model_accuracy(logistic_regression, "LogisticRegressionModel", True)
 
 deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
 
