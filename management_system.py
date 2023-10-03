@@ -182,6 +182,12 @@ Postcode: {suggestion.postcode}
         self.system_message = f"Did you mean {word}?"
 
 
+class Description:
+    def __init__(self, true, message):
+        self.true = true
+        self.message = message
+
+        
 class DialogManager:
     def __init__(self, act_classifier):
         self.act_classifier = act_classifier
@@ -195,6 +201,7 @@ class DialogManager:
         self.all_restaurants.pop(0)  # Remove header
 
         self.foodlist = set(r.food for r in self.all_restaurants)
+
 
     def ask_for_additional_requirements(self):
         user_requirements = {}
@@ -224,27 +231,22 @@ class DialogManager:
     # If the additional requirement is touristic
         if consequent == 'touristic':
             if 'pricerange' in suggestions and 'food_quality' in suggestions and suggestions['pricerange'] == 'cheap' and suggestions['food_quality'] == 'good':
-                return True
+                return Description(True, "a cheap restaurant with good food attracts tourists")
         elif consequent == 'romantic':
             if 'crowdedness' in suggestions and suggestions['crowdedness'] == 'busy':
-                return False
+                return Description(False, "a busy restaurant is not romantic")
         elif consequent == 'romantic':
             if 'length_of_stay' in suggestions and suggestions['length_of_stay'] == 'long stay':
-                return True
+                return Description(True, "spending a long time in a restaurant is romantic")
         elif consequent == 'touristic':
             if 'food' in suggestions and suggestions['food'] == 'romanian':
-                return False
+                return Description(False, "Romanian cuisine is unknown for most tourists and they prefer familiar food")
         elif consequent == 'children':
             if 'length_of_stay' in suggestions and suggestions['length_of_stay'] == 'short stay':
-                return False
+                return Description(False, "spending a long time is not advised when taking children")
         elif consequent == 'assigned seats':
             if 'crowdedness' in suggestions and suggestions['crowdedness'] == 'busy':
-                return True
-        # EXTRA
-        # This one may be conflicting with pricerange? 
-        elif consequent == 'high quality food':
-            if 'food_quality' in suggestions and suggestions['food_quality'] == 'high quality':
-                return True
+                return Description(True, "in a busy restaurant the waiter decides where you sit")
         else:
             return False
 
