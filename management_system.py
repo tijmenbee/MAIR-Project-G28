@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Tuple
 
 from data import train_data, deduped_train_data
-from inform_keywords import inform_keyword_finder, adjusted_Levenshtein
+from inform_keywords import inform_keyword_finder, adjusted_Levenshtein, request_keyword_finder
 from logistic_regression import LogisticRegressionModel
 
 
@@ -120,16 +120,25 @@ class DialogState:
     @staticmethod
     def suggestion_string(suggestion: Restaurant, ask_for_additional=True) -> str:
         suggestion_str = f"""Here's a suggestion: {suggestion.name}!
-It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food.
-Phone number: {suggestion.phone}
-Address: {suggestion.address}
-Postcode: {suggestion.postcode}"""
+It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food."""
 
         if ask_for_additional:
             suggestion_str += ("\n(if you want to check for additional requirements (e.g. romantic, children, "
                                "touristic, assigned seats), say 'additional requirements')")
 
         return suggestion_str
+    
+    @staticmethod
+    def request_str(suggestion: Restaurant, request_dict) -> str:
+        request_str = f"Of course, for {suggestion.name} here is the "
+        if request_dict["phonenumber"]:
+            request_str = request_str + f"phone number: {suggestion.phone}. "
+        if request_dict["address"]:
+            request_str = request_str + f"address: {suggestion.address}. "
+        if request_dict["postcode"]:
+            request_str = request_str + f"postcode: {suggestion.postcode}. "
+
+        return request_str
 
     def can_make_suggestion(self) -> bool:
         return bool(self._pricerange) and bool(self._area) and bool(self._food)
@@ -237,7 +246,8 @@ class DialogManager:
         act = self.act_classifier.predict([utterance])[0]
 
         extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request)
-
+     
+        
         if dialog_state.config_typoCheck:
             # Checks if typo's are spotted
             for word, is_correct in itertools.chain(*extracted_preferences.values()):
@@ -321,8 +331,9 @@ class DialogManager:
             dialog_state.ask_for_confirmation()
 
         if act == "request":
+            extracted_info = self.extract_restaurant_info(utterance)
             if dialog_state.current_suggestion:
-                dialog_state.system_message = dialog_state.suggestion_string(dialog_state.current_suggestion)
+                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info)
             else:
                 dialog_state.system_message = ("Sorry, I don't have a suggestion right now. Please provide more "
                                                "information about your preferences.")
@@ -448,6 +459,11 @@ class DialogManager:
     @staticmethod
     def extract_preferences(user_input, preference_type: PreferenceRequest) -> Dict[str, List[str]]:
         return inform_keyword_finder(user_input, preference_type.value)
+    
+    @staticmethod
+    def extract_restaurant_info(user_input):
+        print(user_input)
+        return request_keyword_finder(user_input)
 
 
 if __name__ == "__main__":
