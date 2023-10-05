@@ -88,7 +88,7 @@ class DialogState:
         self.typo_list = []
         self.config_capsLock = False
         self.config_typoCheck = False
-
+        self.config_levenshtein = 3
 
     def output_system_message(self) -> None:
         if self.system_message:
@@ -245,7 +245,7 @@ class DialogManager:
 
         act = self.act_classifier.predict([utterance])[0]
 
-        extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request)
+        extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request, dialog_state.config_levenshtein)
      
         
         if dialog_state.config_typoCheck:
@@ -333,7 +333,7 @@ class DialogManager:
         if act == "request":
             extracted_info = self.extract_restaurant_info(utterance)
             if dialog_state.current_suggestion:
-                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info)
+                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info, dialog_state.config_levenshtein)
             else:
                 dialog_state.system_message = ("Sorry, I don't have a suggestion right now. Please provide more "
                                                "information about your preferences.")
@@ -443,7 +443,7 @@ class DialogManager:
     def config(self, dialog_state: DialogState):
         setconfig = True
         while setconfig:
-            print(f"Current settings: \n capslock: \t {str(dialog_state.config_capsLock)} \n typochecker: \t {str(dialog_state.config_typoCheck)}")
+            print(f"Current settings: \n capslock: \t {str(dialog_state.config_capsLock)} \n typochecker: \t {str(dialog_state.config_typoCheck)} \n levenshtein distance: \t {str(dialog_state.config_levenshtein)}")
             text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\" \n To go back, type \'return\'")
             splitinput = str(text).split()
             if splitinput[0] == "return":
@@ -452,18 +452,21 @@ class DialogManager:
                 dialog_state.config_capsLock = (splitinput[1].lower() == 'true')
             if splitinput[0] == "typochecker":
                 dialog_state.config_typoCheck = (splitinput[1].lower() == 'true')
+            if splitinput[0] == "levenshtein":
+                dialog_state.config_levenshtein =  [int(i) for i in text.split() if i.isdigit()][0]
         return
         dialog_state.config_typoCheck
         dialog_state.config_capsLock
+        dialog_state.config_levenshtein
 
     @staticmethod
-    def extract_preferences(user_input, preference_type: PreferenceRequest) -> Dict[str, List[str]]:
-        return inform_keyword_finder(user_input, preference_type.value)
+    def extract_preferences(user_input, preference_type: PreferenceRequest, levenshtein_distance) -> Dict[str, List[str]]:
+        return inform_keyword_finder(user_input, preference_type.value, levenshtein_distance)
     
     @staticmethod
-    def extract_restaurant_info(user_input):
+    def extract_restaurant_info(user_input, levenshtein_distance):
         print(user_input)
-        return request_keyword_finder(user_input)
+        return request_keyword_finder(user_input, levenshtein_distance)
 
 
 if __name__ == "__main__":
