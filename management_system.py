@@ -12,7 +12,6 @@ from inform_keywords import inform_keyword_finder, adjusted_Levenshtein, request
 from logistic_regression import LogisticRegressionModel
 
 
-LEVENSHTEIN_DISTANCE = 3
 BOOLMULTIPLE_INFORM = True # Inform statements can have multiple preferences
 
 
