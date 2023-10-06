@@ -1,6 +1,7 @@
 import csv
 import itertools
 import json
+import argparse
 from dataclasses import dataclass, asdict
 from enum import Enum
 from pathlib import Path
@@ -13,6 +14,13 @@ from logistic_regression import LogisticRegressionModel
 
 LEVENSHTEIN_DISTANCE = 3
 BOOLMULTIPLE_INFORM = True # Inform statements can have multiple preferences
+parser = argparse.ArgumentParser()
+parser.add_argument("-cl", "--capslock", type=bool, help="changes text to capslock")
+parser.add_argument("-tc", "--typochecker", type=bool, help="Confirms typo when levenshtein distance is used")
+parser.add_argument("-ld", "--levenshteindistance", type=int, help="change levenshteindistance")
+parser.add_argument("-mi", "--multipleinform", type = int, help ="Inform statements can have multiple preferences")
+args = parser.parse_args()
+LEVENSHTEIN_DISTANCE = args.levenshteindistance
 
 
 @dataclass
@@ -90,7 +98,7 @@ class DialogState:
 
     def output_system_message(self) -> None:
         if self.system_message:
-            if self.config_capsLock:
+            if args.capslock:
                 print(self.system_message.upper())
             else:
                 print(self.system_message)
