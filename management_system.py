@@ -360,6 +360,7 @@ class DialogManager:
         dialog_state = DialogState()
         dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
         dialog_state.output_system_message()
+
         dialog_state.ask_for_missing_info()
         dialog_state.output_system_message()
         while not dialog_state.conversation_over:
@@ -369,11 +370,11 @@ class DialogManager:
             dialog_state.output_system_message()
 
         if dialog_state.extra_requirements_suggestions:
-            reason = Reasoning()
-            extra_requirements = reason.handle_extra_requirements(dialog_state.extra_requirements_suggestions)
+            reasoning = Reasoning()
+            extra_requirements_info = reasoning.handle_extra_requirements(dialog_state.extra_requirements_suggestions)
 
-            if extra_requirements:
-                suggestion, reason, consequent = extra_requirements
+            if extra_requirements_info:
+                suggestion, reason, consequent = extra_requirements_info
 
                 print(f"{DialogState.suggestion_string(suggestion, ask_for_additional=False)}\n"
                       f"Its crowdedness is usually '{suggestion.crowdedness}', the usual length of stay is '"
