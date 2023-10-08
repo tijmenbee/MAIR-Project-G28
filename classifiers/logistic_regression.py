@@ -24,11 +24,3 @@ class LogisticRegressionModel:
     def predict(self, sentences):
         X_test = self.vectorizer.transform(sentences)
         return self.fit.predict(X_test)
-
-
-if __name__ == "__main__":
-    from data.data_processor import deduped_train_data
-
-    n = LogisticRegressionModel(deduped_train_data)
-
-    print(n.predict(["yeah"]))

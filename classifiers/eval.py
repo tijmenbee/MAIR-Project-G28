@@ -1,11 +1,10 @@
 from classifiers.baseline_majority import BaselineMajority
 from classifiers.baseline_rulebased import BaselineRuleBased
 
-from data import train_data, dev_data, deduped_train_data, deduped_dev_data, ACTS
+from data.data_processor import train_data, dev_data, deduped_train_data, deduped_dev_data, ACTS
 from classifiers.decision_tree import DecisionTree
 from classifiers.feedforward_nn import FeedForwardNN
 from classifiers.logistic_regression import LogisticRegressionModel
-from rulebased_nn_merge import RuleBasedNN
 
 TRAINING = True
 
@@ -18,7 +17,7 @@ print()
 
 
 def test_model_accuracy(model, model_name: str, deduped=False):
-    from data import test_data, deduped_test_data
+    from data.data_processor import test_data, deduped_test_data
     from collections import Counter
     if TRAINING:
         testing_data = dev_data if not deduped else deduped_dev_data
@@ -70,15 +69,6 @@ def test_model_accuracy(model, model_name: str, deduped=False):
           f"{macro_f1:.2f} ({model.info})\n\n")
 
 
-def test_model_precision(model, model_name: str, deduped=False):
-    from data import test_data, deduped_test_data
-    if TRAINING:
-        testing_data = dev_data if not deduped else deduped_dev_data
-    else:
-        testing_data = test_data if not deduped else deduped_test_data
-
-# TODO evaluate on precision, recall, f1?
-
 train_acts = [act for act, _ in train_data]
 train_sentences = [sentence for _, sentence in train_data]
 
@@ -91,7 +81,7 @@ baseline_majority = BaselineMajority(train_acts)
 test_model_accuracy(baseline_majority, "BaselineMajority")
 
 baseline_rulebased = BaselineRuleBased(train_acts)
-test_model_accuracy(baseline_rulebased, "BaselineRuleBased", False)
+test_model_accuracy(baseline_rulebased, "BaselineRuleBased")
 
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
@@ -99,16 +89,11 @@ test_model_accuracy(feedforward_nn, "FeedForwardNN")
 deduped_feedforward_nn = FeedForwardNN(deduped_train_data, deduped_dev_data, epochs=8)
 test_model_accuracy(deduped_feedforward_nn, "DedupedFeedForwardNN", deduped=True)
 
-rulebased_nn_merged = RuleBasedNN(deduped_train_data, deduped_dev_data, epochs=4)
-test_model_accuracy(rulebased_nn_merged, "DedupedRuleBasedNN", deduped=True)
-
 logistic_regression = LogisticRegressionModel(train_data)
 test_model_accuracy(logistic_regression, "LogisticRegressionModel", True)
 
 deduped_logistic_regression = LogisticRegressionModel(deduped_train_data)
-
 test_model_accuracy(deduped_logistic_regression, "DedupedLogisticRegressionModel", deduped=True)
-
 
 decision_tree = DecisionTree(train_data)
 test_model_accuracy(decision_tree, "DecisionTree")

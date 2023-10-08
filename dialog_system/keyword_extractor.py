@@ -1,18 +1,18 @@
-import logging
-from collections import defaultdict
+import re
 from typing import Set
 
-import pandas as pd
-import re
 import Levenshtein
 import nltk
+import pandas as pd
 
 nltk.download('words', quiet=True)
 
 from nltk.corpus import words
 
-file = pd.read_csv("data/raw_data/restaurant_info.csv")
+words_set = set(words.words())
 
+
+file = pd.read_csv("data/raw_data/restaurant_info.csv")
 
 KEYWORDS_AREA = file["area"].unique()
 KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
@@ -47,44 +47,45 @@ def request_keyword_finder(sentence: str, levenshtein_distance=LEVENSHTEIN_DISTA
     return request_keywords
 
 
-def inform_keyword_finder(sentence: str, type = None, levenshtein_distance = LEVENSHTEIN_DISTANCE):
-    area = list()
-    price = list()
-    food = list()
+def inform_keyword_finder(sentence: str, type=None, levenshtein_distance=LEVENSHTEIN_DISTANCE):
+    area = []
+    price = []
+    food = []
     any = False
 
     inform_dict = {}
 
     for regex in REGEX_ANY:
-        if re.search(regex, sentence): # if there is a form of 'any', e.g any food is fine, we check for the smallest distance between a 'type' word and the 'any' word
-            anyLocation = sentence.find(re.search(regex, sentence).group(0))  # The location of the 'any' type
+        # if there is a form of 'any', e.g. any food is fine, we check for the smallest distance between a 'type' word and the 'any' word
+        if re.search(regex, sentence):
+            any_location = sentence.find(re.search(regex, sentence).group(0))  # The location of the 'any' type
             smallest_distance = 999  
 
-            tempType = None  
+            temp_type = None
             
             for word in FOOD_WORDS:  # If we find a food word in FOOD_WORDS we set the distance between the 'type' and 'any' to smallest distance
                 if sentence.find(word) == -1:
                     continue
-                if abs(sentence.find(word)-anyLocation) < smallest_distance:
-                    smallest_distance = abs(sentence.find(word)-anyLocation)
-                    tempType = 'food'
+                if abs(sentence.find(word)-any_location) < smallest_distance:
+                    smallest_distance = abs(sentence.find(word)-any_location)
+                    temp_type = 'food'
 
-            for word in AREA_WORDS: # Ditto for area words
+            for word in AREA_WORDS:  # Ditto for area words
                 if sentence.find(word) == -1:
                     continue
-                if abs(sentence.find(word)-anyLocation) < smallest_distance:
-                    smallest_distance = abs(sentence.find(word)-anyLocation)
-                    tempType = 'area'
+                if abs(sentence.find(word)-any_location) < smallest_distance:
+                    smallest_distance = abs(sentence.find(word)-any_location)
+                    temp_type = 'area'
 
-            for word in PRICE_WORDS: # Ditto for price words
+            for word in PRICE_WORDS:  # Ditto for price words
                 if sentence.find(word) == -1:
                     continue
-                if abs(sentence.find(word)-anyLocation) < smallest_distance:
-                    smallest_distance = abs(sentence.find(word)-anyLocation)
-                    tempType = 'pricerange'
+                if abs(sentence.find(word)-any_location) < smallest_distance:
+                    smallest_distance = abs(sentence.find(word)-any_location)
+                    temp_type = 'pricerange'
 
-            if smallest_distance != 999 and tempType: # if we found a word type we set that type to 'any' in the inform_dict 
-                inform_dict[tempType] =  [('any', True)]
+            if smallest_distance != 999 and temp_type:  # if we found a word type we set that type to 'any' in the inform_dict
+                inform_dict[temp_type] = [('any', True)]
             else: 
                 any = True
 
@@ -92,28 +93,25 @@ def inform_keyword_finder(sentence: str, type = None, levenshtein_distance = LEV
         for keyword in KEYWORDS_FOOD:
             if adjusted_levenshtein(keyword, word) < levenshtein_distance:
                 food.append((keyword, keyword == word))
-                #inform_dict['errorFood'] = word
                 inform_dict['food'] = food
                 break
+
         for keyword in KEYWORDS_AREA:
             if adjusted_levenshtein(keyword, word) < levenshtein_distance:
                 area.append((keyword, keyword == word))
-                #inform_dict['errorArea'] = word
                 inform_dict['area'] = area
                 break
+
         for keyword in KEYWORDS_PRICE:
             if adjusted_levenshtein(keyword, word) < levenshtein_distance:
                 price.append((keyword, keyword == word))
-                #inform_dict['errorPrice'] = word
                 inform_dict['pricerange'] = price
                 break
 
     if any:
         inform_dict[type] = [('any', True)]
+
     return inform_dict
-
-
-words_set = set(words.words())
 
 
 def adjusted_levenshtein(keyword: str, word: str) -> int:
@@ -124,11 +122,3 @@ def adjusted_levenshtein(keyword: str, word: str) -> int:
     if keyword[0] != word[0]:
         return 10
     return Levenshtein.distance(keyword, word)
-
-
-if __name__ == "__main__":
-    test_sentence = "I dont care about the price.just give me italien food in any location"
-    test_request = " Give me the adress and numbr and pstcode"
-    print(inform_keyword_finder(test_sentence, "pricerange"))
-
-    print(request_keyword_finder(test_request))

@@ -1,6 +1,4 @@
-from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
 
 
