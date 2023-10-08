@@ -1,6 +1,6 @@
 import csv
 import itertools
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from dialog_state import DialogState, Restaurant, PreferenceRequest
 from inform_keywords import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
@@ -146,7 +146,7 @@ class DialogManager:
 
         return dialog_state
 
-    def converse(self):
+    def converse(self) -> Optional[List[Restaurant]]:
         dialog_state = DialogState()
         dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
         dialog_state.output_system_message()
@@ -160,18 +160,9 @@ class DialogManager:
             dialog_state.output_system_message()
 
         if dialog_state.extra_requirements_suggestions:
-            reasoning = Reasoning()
-            extra_requirements_info = reasoning.handle_extra_requirements(dialog_state.extra_requirements_suggestions)
+            return dialog_state.extra_requirements_suggestions
 
-            if extra_requirements_info:
-                suggestion, reason, consequent = extra_requirements_info
-
-                print(f"{DialogState.suggestion_string(suggestion, ask_for_additional=False)}\n"
-                      f"Its crowdedness is usually '{suggestion.crowdedness}', the usual length of stay is '"
-                      f"{suggestion.length_of_stay}', and the food quality is '{suggestion.food_quality}'.\n"
-                      f"It's classified as '{consequent}' because {reason}.")
-            else:
-                print("Sorry, there are no suggestions given your additional requirements.")
+        return None
 
     @staticmethod
     def extract_preferences(user_input: str, preference_type: PreferenceRequest, levenshtein_distance: int) -> Dict[str, List[str]]:

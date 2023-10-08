@@ -2,6 +2,8 @@ import re
 from dataclasses import dataclass
 from typing import List, Tuple, Optional, Dict
 
+from dialog_state import DialogState, Restaurant
+
 
 @dataclass
 class Rule:
@@ -103,7 +105,7 @@ class Reasoning:
                 if rule_satisfied:
                     yield restaurant, ", and ".join(reasonings)
 
-    def handle_extra_requirements(self, all_suggestions):
+    def handle_extra_requirements(self, all_suggestions) -> Optional[Tuple[Restaurant, str, str]]:
         consequent = ""
         while not (m := re.search(fr"({'|'.join(self.all_consequents)})", consequent)):
             consequent = input(f"Please specify your additional requirement ({', '.join(self.all_consequents)}):\n")
@@ -116,3 +118,18 @@ class Reasoning:
             result += (consequent,)
 
         return result
+
+
+def handle_reasoning(suggestions):
+    reasoning = Reasoning()
+    extra_requirements_info = reasoning.handle_extra_requirements(suggestions)
+
+    if extra_requirements_info:
+        suggestion, reason, consequent = extra_requirements_info
+
+        print(f"{DialogState.suggestion_string(suggestion, ask_for_additional=False)}\n"
+              f"Its crowdedness is usually '{suggestion.crowdedness}', the usual length of stay is '"
+              f"{suggestion.length_of_stay}', and the food quality is '{suggestion.food_quality}'.\n"
+              f"It's classified as '{consequent}' because {reason}.")
+    else:
+        print("Sorry, there are no suggestions given your additional requirements.")

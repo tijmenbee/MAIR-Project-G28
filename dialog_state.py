@@ -173,10 +173,10 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
         quit_config = False
         while not quit_config:
             print(f"Current settings:\n"
-                  f"capslock: {str(self.config.caps_lock):<15}\n"
-                  f"typochecker: {str(self.config.typo_check):<15}\n"
-                  f"debug: {str(self.config.debug_mode):<15}\n"
-                  f"levenshtein distance: {str(self.config.levenshtein):<15}")
+                  f"'capslock: {str(self.config.caps_lock):>40}\n"
+                  f"typochecker:\t\t\t{str(self.config.typo_check):<15}\n"
+                  f"levenshtein distance:\t{str(self.config.levenshtein):<15}\n"
+                  f"debug:\t\t\t\t\t{str(self.config.debug_mode):<15}\n")
             text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\"\n To go back, "
                          "type \'return\':\n")
             splitinput = str(text).split()
