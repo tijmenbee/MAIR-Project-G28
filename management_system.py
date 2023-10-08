@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Tuple
 
 from data import train_data, deduped_train_data
-from inform_keywords import inform_keyword_finder, adjusted_Levenshtein, request_keyword_finder
+from inform_keywords import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
 from logistic_regression import LogisticRegressionModel
 
 
@@ -117,7 +117,7 @@ class DialogState:
     @staticmethod
     def suggestion_string(suggestion: Restaurant, ask_for_additional=True) -> str:
         suggestion_str = f"""Here's a suggestion: {suggestion.name}!
-It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food."""
+It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food. You can ask for its address, phone number, or postcode."""
 
         if ask_for_additional:
             suggestion_str += ("\n(if you want to check for additional requirements (e.g. romantic, children, "
@@ -127,13 +127,14 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
     
     @staticmethod
     def request_str(suggestion: Restaurant, request_dict) -> str:
-        request_str = f"Of course, for {suggestion.name} here is the "
+        unknown_string = "unknown, unfortunately"
+        request_str = f"For '{suggestion.name}': "
         if request_dict.get("phonenumber"):
-            request_str = request_str + f"phone number: {suggestion.phone}.\n"
+            request_str += f"\n- the phone number is {suggestion.phone if suggestion.phone else unknown_string}"
         if request_dict.get("address"):
-            request_str = request_str + f"address: {suggestion.address}.\n"
+            request_str += f"\n- the address is {suggestion.address if suggestion.address else unknown_string}"
         if request_dict.get("postcode"):
-            request_str = request_str + f"postcode: {suggestion.postcode}.\n"
+            request_str += f"\n- the postcode is {suggestion.postcode if suggestion.postcode else unknown_string}"
 
         return request_str
 
@@ -234,13 +235,13 @@ class DialogManager:
         # We keep the implementation for the dialog system and the reasoning component separate. If a suggestion is
         # made, we inform the user that they can ask for additional requirements. If they do, we leave the dialog system
         # (which implements 1b), and move to the reasoning component (which implements 1c).
-        if adjusted_Levenshtein("additional requirements", utterance) < dialog_state.config_levenshtein:
+        if adjusted_levenshtein("additional requirements", utterance) < dialog_state.config_levenshtein:
             dialog_state.extra_requirements_suggestions = dialog_state.calculate_suggestions(self.all_restaurants)
             dialog_state.system_message = ""
             dialog_state.conversation_over = True
             return dialog_state
 
-        if adjusted_Levenshtein("foodlist", utterance) < dialog_state.config_levenshtein:
+        if adjusted_levenshtein("foodlist", utterance) < dialog_state.config_levenshtein:
             dialog_state.system_message = (f"Here is a list of all possible food types:\n" +
                                            '\n'.join(sorted(self.foodlist)))
             return dialog_state
@@ -261,7 +262,7 @@ class DialogManager:
                     dialog_state.previous_act = act
                     dialog_state.confirm_levenshtein()
                     return dialog_state
-            # Checks if typos are confirmed
+            # Checks if typo is confirmed
             if dialog_state.confirm_typo:
                 if act == "affirm":
                     extracted_preferences = dialog_state.previous_preferences
