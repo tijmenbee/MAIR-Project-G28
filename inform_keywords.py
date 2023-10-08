@@ -18,14 +18,14 @@ KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
 KEYWORDS_PRICE = file["pricerange"].unique()
 KEYWORDS_FOOD = file["food"].unique()
 
-KEYWORDS_POSTCODE = ["postcode","post","postal"]
+KEYWORDS_POSTCODE = ["postcode", "post", "postal"]
 KEYWORDS_ADDRESS = ["address", "where", "location"]
-KEYWORDS_PHONENUMBER = ["phone", "number"]
+KEYWORDS_PHONENUMBER = ["phone", "number", "phonenumber"]
 
 
-FOOD_WORDS = ["food", "type"]
-PRICE_WORDS = ["price","pricerange","money"]
-AREA_WORDS = ["part", "town", "city", "location"]
+FOOD_WORDS = ["food", "type", "cuisine"]
+PRICE_WORDS = ["price", "pricerange", "money", "cost"]
+AREA_WORDS = ["part", "town", "city", "location", "area"]
 
 
 LEVENSHTEIN_DISTANCE = 3
