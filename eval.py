@@ -62,7 +62,7 @@ def test_model_accuracy(model, model_name: str, deduped=False):
             recall = TP[act]/(TP[act]+FN[act])
             F1 = 2*(precision*recall)/(precision+recall)
             accuracy = TP[act]/(TP[act]+FN[act]+FP[act])
-        print(f"{act} -- precision: {precision:.2f}, recall: {recall:.2f}, F1: {F1:.2f}, accuracy: {accuracy:.2f}")
+        print(f"{act} -- precision: {precision:.2f}, recall: {recall:.2f}, F1: {F1:.2f}, accuracy: {accuracy:.2f}, acts: {acts[act]}")
         F1_dict[act] = F1
     weighted_f1 = sum(F1_dict[key]*acts.get(key, 0) for key in acts) / len(test_acts)
     macro_f1 = sum(F1_dict[key] for key in acts) / len(acts)

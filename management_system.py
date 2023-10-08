@@ -88,6 +88,7 @@ class DialogState:
         self.config_capsLock = False
         self.config_typoCheck = False
         self.config_levenshtein = 3
+        self.config_debugMode = False
 
     def output_system_message(self) -> None:
         if self.system_message:
@@ -268,10 +269,10 @@ class DialogManager:
 
 
         extracted_preferences = {k: [v[0] for v in value] for k, value in extracted_preferences.items()}
-
-        print("act: ", act)
-        print("current prefs: ", dialog_state._pricerange, dialog_state._area, dialog_state._food)
-        print("extracted prefs: ", extracted_preferences)
+        if dialog_state.config_debugMode:
+            print("act: ", act)
+            print("current prefs: ", dialog_state._pricerange, dialog_state._area, dialog_state._food)
+            print("extracted prefs: ", extracted_preferences)
 
         if act == "repeat":
             dialog_state.output_system_message()
@@ -344,7 +345,8 @@ class DialogManager:
             dialog_state = DialogState()
             dialog_state.ask_for_missing_info()
 
-        print(f"new prefs: {dialog_state._pricerange=}, {dialog_state._area=}, {dialog_state._food=}")
+        if dialog_state.config_debugMode:
+            print(f"new prefs: {dialog_state._pricerange=}, {dialog_state._area=}, {dialog_state._food=}")
 
         return dialog_state
 
@@ -442,7 +444,7 @@ class DialogManager:
     def config(self, dialog_state: DialogState):
         setconfig = True
         while setconfig:
-            print(f"Current settings: \n capslock: \t {str(dialog_state.config_capsLock)} \n typochecker: \t {str(dialog_state.config_typoCheck)} \n levenshtein distance: \t {str(dialog_state.config_levenshtein)}")
+            print(f"Current settings: \n capslock: \t {str(dialog_state.config_capsLock)} \n typochecker: \t {str(dialog_state.config_typoCheck)} \n debug: \t {str(dialog_state.config_debugMode)} \n levenshtein distance: \t {str(dialog_state.config_levenshtein)}")
             text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\" \n To go back, type \'return\'")
             splitinput = str(text).split()
             if splitinput[0] == "return":
@@ -451,12 +453,15 @@ class DialogManager:
                 dialog_state.config_capsLock = (splitinput[1].lower() == 'true')
             if splitinput[0] == "typochecker":
                 dialog_state.config_typoCheck = (splitinput[1].lower() == 'true')
+            if splitinput[0] == "debug":
+                dialog_state.config_debugMode = (splitinput[1].lower() == 'true')
             if splitinput[0] == "levenshtein":
                 dialog_state.config_levenshtein =  [int(i) for i in text.split() if i.isdigit()][0]
         return
         dialog_state.config_typoCheck
         dialog_state.config_capsLock
         dialog_state.config_levenshtein
+        dialog_state.config_debugMode
 
     @staticmethod
     def extract_preferences(user_input, preference_type: PreferenceRequest, levenshtein_distance) -> Dict[str, List[str]]:
