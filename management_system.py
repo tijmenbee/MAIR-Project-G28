@@ -12,9 +12,6 @@ from inform_keywords import inform_keyword_finder, adjusted_Levenshtein, request
 from logistic_regression import LogisticRegressionModel
 
 
-BOOLMULTIPLE_INFORM = True # Inform statements can have multiple preferences
-
-
 @dataclass
 class Restaurant:
     name: str
@@ -132,11 +129,11 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
     def request_str(suggestion: Restaurant, request_dict) -> str:
         request_str = f"Of course, for {suggestion.name} here is the "
         if request_dict.get("phonenumber"):
-            request_str = request_str + f"phone number: {suggestion.phone}. "
+            request_str = request_str + f"phone number: {suggestion.phone}.\n"
         if request_dict.get("address"):
-            request_str = request_str + f"address: {suggestion.address}. "
+            request_str = request_str + f"address: {suggestion.address}.\n"
         if request_dict.get("postcode"):
-            request_str = request_str + f"postcode: {suggestion.postcode}. "
+            request_str = request_str + f"postcode: {suggestion.postcode}.\n"
 
         return request_str
 
