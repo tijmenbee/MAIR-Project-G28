@@ -237,19 +237,23 @@ class DialogManager:
         # We keep the implementation for the dialog system and the reasoning component separate. If a suggestion is
         # made, we inform the user that they can ask for additional requirements. If they do, we leave the dialog system
         # (which implements 1b), and move to the reasoning component (which implements 1c).
-        if adjusted_Levenshtein("additional requirements", utterance) < 3:
+        if adjusted_Levenshtein("additional requirements", utterance) < dialog_state.config_levenshtein:
             dialog_state.extra_requirements_suggestions = dialog_state.calculate_suggestions(self.all_restaurants)
             dialog_state.system_message = ""
             dialog_state.conversation_over = True
             return dialog_state
 
+        if adjusted_Levenshtein("foodlist", utterance) < dialog_state.config_levenshtein:
+            dialog_state.system_message = (f"Here is a list of all possible food types:\n" +
+                                           '\n'.join(sorted(self.foodlist)))
+            return dialog_state
+
         act = self.act_classifier.predict([utterance])[0]
 
         extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request, dialog_state.config_levenshtein)
-     
-        
+
         if dialog_state.config_typoCheck:
-            # Checks if typo's are spotted
+            # Checks if typos are spotted
             for word, is_correct in itertools.chain(*extracted_preferences.values()):
                 if not is_correct:
                     dialog_state.typo_list.append(word)
@@ -260,13 +264,12 @@ class DialogManager:
                     dialog_state.previous_act = act
                     dialog_state.confirm_levenshtein()
                     return dialog_state
-            # Checks if typo's are confirmed
+            # Checks if typos are confirmed
             if dialog_state.confirm_typo:
                 if act == "affirm":
                     extracted_preferences = dialog_state.previous_preferences
                     act = dialog_state.previous_act
                     dialog_state.confirm_typo = False
-
 
         extracted_preferences = {k: [v[0] for v in value] for k, value in extracted_preferences.items()}
         if dialog_state.config_debugMode:
@@ -331,9 +334,9 @@ class DialogManager:
             dialog_state.ask_for_confirmation()
 
         if act == "request":
-            extracted_info = self.extract_restaurant_info(utterance)
+            extracted_info = self.extract_restaurant_info(utterance, dialog_state.config_levenshtein)
             if dialog_state.current_suggestion:
-                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info, dialog_state.config_levenshtein)
+                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info)
             else:
                 dialog_state.system_message = ("Sorry, I don't have a suggestion right now. Please provide more "
                                                "information about your preferences.")
@@ -450,7 +453,6 @@ class DialogManager:
     
     @staticmethod
     def extract_restaurant_info(user_input, levenshtein_distance):
-        print(user_input)
         return request_keyword_finder(user_input, levenshtein_distance)
 
 
