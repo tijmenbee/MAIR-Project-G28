@@ -1,13 +1,11 @@
 import csv
 import itertools
-import json
 import re
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
 from typing import List, Optional, Dict, Tuple
 
-from data import train_data, deduped_train_data
+from data import deduped_train_data
 from inform_keywords import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
 from logistic_regression import LogisticRegressionModel
 
@@ -31,39 +29,6 @@ class PreferenceRequest(Enum):
     PRICERANGE = "pricerange"
     FOOD = "food"
     ANY = None
-
-
-@dataclass(frozen=True)
-class SystemState:
-    system_message: Optional[str]
-    user_input: str
-    act: str
-    pricerange: List[str]
-    area: List[str]
-    food: List[str]
-    excluded_restaurants: List[Restaurant]
-    current_suggestion: Optional[str]
-    current_preference_request: PreferenceRequest
-
-
-def save_conversation(states: List[SystemState]) -> None:
-    json_path = Path("saved_convos.json")
-    if json_path.exists():
-        with json_path.open('r') as f:
-            data = json.load(f)
-    else:
-        data = []
-
-    new_entry = []
-    for state in states:
-        state_dict = asdict(state)
-        state_dict['current_preference_request'] = state.current_preference_request.name
-        new_entry.append(state_dict)
-
-    data.append(new_entry)
-
-    with json_path.open('w') as f:
-        json.dump(data, f, indent=2)
 
 
 class DialogState:
