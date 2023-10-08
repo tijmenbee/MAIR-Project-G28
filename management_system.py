@@ -425,7 +425,8 @@ class DialogManager:
         setconfig = True
         while setconfig:
             print(f"Current settings: \n capslock: \t {str(dialog_state.config_capsLock)} \n typochecker: \t {str(dialog_state.config_typoCheck)} \n debug: \t {str(dialog_state.config_debugMode)} \n levenshtein distance: \t {str(dialog_state.config_levenshtein)}")
-            text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\" \n To go back, type \'return\'")
+            text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\"\n To go back, "
+                         "type \'return\':\n")
             splitinput = str(text).split()
             if splitinput[0] == "return":
                 setconfig = False
