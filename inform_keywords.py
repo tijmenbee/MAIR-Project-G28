@@ -57,33 +57,34 @@ def inform_keyword_finder(sentence: str, type = None, levenshtein_distance = LEV
     inform_dict = {}
 
     for regex in REGEX_ANY:
-        if re.search(regex, sentence):
-            anyLocation = sentence.find(re.search(regex, sentence).group(0))
-            smallest_distance = 999
-            tempType = None
+        if re.search(regex, sentence): # if there is a form of 'any', e.g any food is fine, we check for the smallest distance between a 'type' word and the 'any' word
+            anyLocation = sentence.find(re.search(regex, sentence).group(0))  # The location of the 'any' type
+            smallest_distance = 999  
+
+            tempType = None  
             
-            for word in FOOD_WORDS:
+            for word in FOOD_WORDS:  # If we find a food word in FOOD_WORDS we set the distance between the 'type' and 'any' to smallest distance
                 if sentence.find(word) == -1:
                     continue
                 if abs(sentence.find(word)-anyLocation) < smallest_distance:
                     smallest_distance = abs(sentence.find(word)-anyLocation)
                     tempType = 'food'
 
-            for word in AREA_WORDS:
+            for word in AREA_WORDS: # Ditto for area words
                 if sentence.find(word) == -1:
                     continue
                 if abs(sentence.find(word)-anyLocation) < smallest_distance:
                     smallest_distance = abs(sentence.find(word)-anyLocation)
                     tempType = 'area'
 
-            for word in PRICE_WORDS:
+            for word in PRICE_WORDS: # Ditto for price words
                 if sentence.find(word) == -1:
                     continue
                 if abs(sentence.find(word)-anyLocation) < smallest_distance:
                     smallest_distance = abs(sentence.find(word)-anyLocation)
                     tempType = 'pricerange'
 
-            if smallest_distance != 999 and tempType:
+            if smallest_distance != 999 and tempType: # if we found a word type we set that type to 'any' in the inform_dict 
                 inform_dict[tempType] =  [('any', True)]
             else: 
                 any = True
