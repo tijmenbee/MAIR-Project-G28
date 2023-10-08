@@ -1,7 +1,7 @@
 from typing import List, Tuple
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Silence TensorFlow debug stuff
 
 import numpy as np
 from keras.preprocessing.text import Tokenizer
@@ -39,7 +39,6 @@ class FeedForwardNN:
         for i, label in enumerate(labels):
             one_hot_labels[i, label] = 1
 
-        # TODO add more layers? dropout?
         model = Sequential()
         model.add(Dense(H_LAYER_SIZE, activation='relu', input_shape=(VOCAB_SIZE,)))
         model.add(Dense(H_LAYER_SIZE, activation='relu'))
@@ -86,11 +85,3 @@ class FeedForwardNN:
             predicted_acts.append(int_to_act[label_index])
 
         return predicted_acts
-
-
-if __name__ == "__main__":
-    from data import train_data, dev_data as d_data
-
-    n = FeedForwardNN(train_data, d_data)
-
-    print(n.predict(["um no preference"]))

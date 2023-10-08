@@ -1,4 +1,6 @@
 import logging
+from collections import defaultdict
+from typing import Set
 
 import pandas as pd
 import re
@@ -27,27 +29,22 @@ FOOD_WORDS = ["food", "type", "cuisine"]
 PRICE_WORDS = ["price", "pricerange", "money", "cost"]
 AREA_WORDS = ["part", "town", "city", "location", "area"]
 
+REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care|mind)", r"\bany"]
+
 
 LEVENSHTEIN_DISTANCE = 3
 
 
-REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care|mind)", r"\bany"]
-
-
-# todo solution for: no, I want spanish
-
-def request_keyword_finder(sentence: str, levenshtein_distance=LEVENSHTEIN_DISTANCE):
-    request_dict = {"postcode":False, "address":False, "phonenumber":False}
-    list_keywords = {"postcode":KEYWORDS_POSTCODE, "address":KEYWORDS_ADDRESS, "phonenumber":KEYWORDS_PHONENUMBER}
+def request_keyword_finder(sentence: str, levenshtein_distance=LEVENSHTEIN_DISTANCE) -> Set[str]:
+    request_keywords = set()
+    list_keywords = {"postcode": KEYWORDS_POSTCODE, "address": KEYWORDS_ADDRESS, "phone number": KEYWORDS_PHONENUMBER}
 
     for word in sentence.split():
         for info, keywords in list_keywords.items():
-            for keyword in keywords:
-                if adjusted_levenshtein(keyword, word) < levenshtein_distance:
-                    request_dict[info] = True
-                    break
+            if any(adjusted_levenshtein(keyword, word) < levenshtein_distance for keyword in keywords):
+                request_keywords.add(info)
 
-    return request_dict
+    return request_keywords
 
 
 def inform_keyword_finder(sentence: str, type = None, levenshtein_distance = LEVENSHTEIN_DISTANCE):
@@ -98,16 +95,12 @@ def inform_keyword_finder(sentence: str, type = None, levenshtein_distance = LEV
                 #inform_dict['errorFood'] = word
                 inform_dict['food'] = food
                 break
-    
-    for word in sentence.split():
         for keyword in KEYWORDS_AREA:
             if adjusted_levenshtein(keyword, word) < levenshtein_distance:
                 area.append((keyword, keyword == word))
                 #inform_dict['errorArea'] = word
                 inform_dict['area'] = area
                 break
-            
-    for word in sentence.split():
         for keyword in KEYWORDS_PRICE:
             if adjusted_levenshtein(keyword, word) < levenshtein_distance:
                 price.append((keyword, keyword == word))

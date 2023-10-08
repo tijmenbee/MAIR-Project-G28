@@ -2,7 +2,7 @@ import csv
 import itertools
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Set
 
 from data import train_data
 from feedforward_nn import FeedForwardNN
@@ -104,17 +104,18 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
         return suggestion_str
     
     @staticmethod
-    def request_str(suggestion: Restaurant, request_dict) -> str:
+    def request_string(suggestion: Restaurant, requested_info: Set[str]) -> str:
         unknown_string = "unknown, unfortunately"
-        request_str = f"For '{suggestion.name}': "
-        if request_dict.get("phonenumber"):
-            request_str += f"\n- the phone number is {suggestion.phone if suggestion.phone else unknown_string}"
-        if request_dict.get("address"):
-            request_str += f"\n- the address is {suggestion.address if suggestion.address else unknown_string}"
-        if request_dict.get("postcode"):
-            request_str += f"\n- the postcode is {suggestion.postcode if suggestion.postcode else unknown_string}"
+        request_string = f"For '{suggestion.name}': "
 
-        return request_str
+        if "phone number" in requested_info:
+            request_string += f"\n- the phone number is {suggestion.phone if suggestion.phone else unknown_string}"
+        if "address" in requested_info:
+            request_string += f"\n- the address is {suggestion.address if suggestion.address else unknown_string}"
+        if "postcode" in requested_info:
+            request_string += f"\n- the postcode is {suggestion.postcode if suggestion.postcode else unknown_string}"
+
+        return request_string
 
     def can_make_suggestion(self) -> bool:
         return bool(self._pricerange) and bool(self._area) and bool(self._food)
@@ -337,9 +338,9 @@ class DialogManager:
             dialog_state.ask_for_confirmation()
 
         if act == "request":
-            extracted_info = self.extract_restaurant_info(utterance, dialog_state.config.levenshtein)
             if dialog_state.current_suggestion:
-                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info)
+                requested_info = self.extract_restaurant_info(utterance, dialog_state.config.levenshtein)
+                dialog_state.system_message = dialog_state.request_string(dialog_state.current_suggestion, requested_info)
             else:
                 dialog_state.system_message = ("Sorry, I don't have a suggestion right now. Please provide more "
                                                "information about your preferences.")
