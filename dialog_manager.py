@@ -2,13 +2,13 @@ import csv
 import itertools
 from typing import List, Dict, Optional
 
+from config import Config
 from dialog_state import DialogState, Restaurant, PreferenceRequest
 from inform_keywords import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
-from reasoning import Reasoning
 
 
 class DialogManager:
-    def __init__(self, act_classifier):
+    def __init__(self, act_classifier, config: Config = None):
         self.act_classifier = act_classifier
         self.all_restaurants = []
 
@@ -20,6 +20,11 @@ class DialogManager:
         self.all_restaurants.pop(0)  # Remove header
 
         self.foodlist = set(r.food for r in self.all_restaurants)
+
+        if config is None:
+            config = Config()
+
+        self.config = config
 
     def transition(self, dialog_state: DialogState, utterance: str) -> DialogState:
         # We keep the implementation for the dialog system and the reasoning component separate. If a suggestion is
@@ -37,7 +42,7 @@ class DialogManager:
             return dialog_state
 
         if utterance == "-config":
-            dialog_state.set_config()
+            dialog_state.config.update_config()
             return dialog_state
 
         act = self.act_classifier.predict([utterance])[0]
@@ -138,7 +143,7 @@ class DialogManager:
             dialog_state.system_message = "Sorry, I didn't quite get that. Could you repeat yourself?"
 
         if act == "restart":
-            dialog_state = DialogState()
+            dialog_state = DialogState(self.config)
             dialog_state.ask_for_missing_info()
 
         if dialog_state.config.debug_mode:
@@ -147,7 +152,7 @@ class DialogManager:
         return dialog_state
 
     def converse(self) -> Optional[List[Restaurant]]:
-        dialog_state = DialogState()
+        dialog_state = DialogState(self.config)
         dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
         dialog_state.output_system_message()
 

@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Set
@@ -27,7 +28,7 @@ class PreferenceRequest(Enum):
 
 
 class DialogState:
-    def __init__(self):
+    def __init__(self, config=None):
         self._pricerange: List[str] = []
         self._area: List[str] = []
         self._food: List[str] = []
@@ -42,10 +43,15 @@ class DialogState:
         self.confirm_typo = False
         self.previous_act = None
         self.typo_list = []
-        self.config = Config()
+
+        if config is None:
+            config = Config()
+
+        self.config = config
 
     def output_system_message(self) -> None:
         if self.system_message:
+            time.sleep(self.config.system_delay)
             if self.config.caps_lock:
                 print(self.system_message.upper())
             else:
@@ -168,25 +174,3 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
     def confirm_levenshtein(self) -> None:
         self.system_message = f"Did you mean the following: {' and '.join(self.typo_list)}?"
         self.typo_list = []
-
-    def set_config(self):
-        quit_config = False
-        while not quit_config:
-            print(f"Current settings:\n"
-                  f"'capslock: {str(self.config.caps_lock):>40}\n"
-                  f"typochecker:\t\t\t{str(self.config.typo_check):<15}\n"
-                  f"levenshtein distance:\t{str(self.config.levenshtein):<15}\n"
-                  f"debug:\t\t\t\t\t{str(self.config.debug_mode):<15}\n")
-            text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\"\n To go back, "
-                         "type \'return\':\n")
-            splitinput = str(text).split()
-            if splitinput[0] == "return":
-                quit_config = True
-            if splitinput[0] == "capslock":
-                self.config.caps_lock = (splitinput[1].lower() == 'true')
-            if splitinput[0] == "typochecker":
-                self.config.typo_check = (splitinput[1].lower() == 'true')
-            if splitinput[0] == "debug":
-                self.config.debug_mode = (splitinput[1].lower() == 'true')
-            if splitinput[0] == "levenshtein":
-                self.config.levenshtein = [int(i) for i in text.split() if i.isdigit()][0]
