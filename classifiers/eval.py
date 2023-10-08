@@ -38,8 +38,8 @@ def test_model_accuracy(model, model_name: str, deduped=False):
         if pred_acts[i] == test_acts[i]:
             TP.append(test_acts[i])
         else:
-            FP.append(test_acts[i])
-            FN.append(pred_acts[i])
+            FN.append(test_acts[i])
+            FP.append(pred_acts[i])
 
     TP = Counter(TP)
     FN = Counter(FN)
@@ -80,8 +80,14 @@ deduped_train_sentences = [sentence for _, sentence in deduped_train_data]
 baseline_majority = BaselineMajority(train_acts)
 test_model_accuracy(baseline_majority, "BaselineMajority")
 
+deduped_baseline_majority = BaselineMajority(deduped_train_acts)
+test_model_accuracy(deduped_baseline_majority, "DedupedBaselineMajority", deduped=True)
+
 baseline_rulebased = BaselineRuleBased(train_acts)
 test_model_accuracy(baseline_rulebased, "BaselineRuleBased")
+
+deduped_baseline_rulebased = BaselineRuleBased(deduped_train_acts)
+test_model_accuracy(deduped_baseline_rulebased, "DedupedBaselineRuleBased", deduped=True)
 
 feedforward_nn = FeedForwardNN(train_data, dev_data)
 test_model_accuracy(feedforward_nn, "FeedForwardNN")
