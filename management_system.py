@@ -1,14 +1,14 @@
 import csv
 import itertools
-import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict
 
 from data import train_data
 from feedforward_nn import FeedForwardNN
 from inform_keywords import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
 from logistic_regression import LogisticRegressionModel
+from reasoning import Reasoning
 
 CAPS_LOCK = False
 TYPO_CHECK = False
@@ -94,10 +94,11 @@ class DialogState:
     @staticmethod
     def suggestion_string(suggestion: Restaurant, ask_for_additional=True) -> str:
         suggestion_str = f"""Here's a suggestion: {suggestion.name}!
-It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food. You can ask for its address, phone number, or postcode."""
+It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food."""
 
         if ask_for_additional:
-            suggestion_str += ("\n(if you want to check for additional requirements (e.g. romantic, children, "
+            suggestion_str += ("You can ask for its address, phone number, or postcode."
+                               "\n(if you want to check for additional requirements (e.g. romantic, children, "
                                "touristic, assigned seats), say 'additional requirements')")
 
         return suggestion_str
@@ -355,44 +356,6 @@ class DialogManager:
 
         return dialog_state
 
-    def get_extra_requirements_suggestions(self, suggestions: List[Restaurant], consequent: str) -> List[Tuple[Restaurant, str]]:
-        matched_suggestions = []
-        for restaurant in suggestions:
-            if description := self.apply_inference_rules(restaurant, consequent):
-                if description.rule_satisfied:
-                    matched_suggestions.append((restaurant, description.reasoning))
-
-        return matched_suggestions
-
-    @staticmethod
-    def apply_inference_rules(suggestion: Restaurant, consequent: str) -> Optional[Description]:
-        if consequent == 'touristic':
-            if suggestion.pricerange == 'cheap' and suggestion.food_quality == 'good food':
-                return Description(True, "because a cheap restaurant with good food attracts tourists")
-            if suggestion.pricerange != 'cheap' and suggestion.food_quality != 'good food':
-                return Description(False, "because this restaurant usually does not attract tourists")
-            if suggestion.food == 'romanian':
-                return Description(False, "because Romanian cuisine is unknown for most tourists and they prefer familiar food")
-        elif consequent == 'romantic':
-            if suggestion.length_of_stay == 'long stay':
-                return Description(True, "because spending a long time in a restaurant is romantic")
-            if suggestion.crowdedness == 'busy':
-                return Description(False, "because a busy restaurant is not romantic")
-            elif suggestion.crowdedness == 'quiet':
-                return Description(True, "a quiet restaurant is romantic")
-        elif consequent == 'children':
-            if suggestion.length_of_stay == 'short stay':
-                return Description(False, "friendly because spending a long time is not advised when taking children")
-            else:
-                return Description(True, "friendly because you are able to spend a long time here")
-        elif consequent == 'assigned seats':
-            if suggestion.crowdedness == 'busy':
-                return Description(True, "because in a busy restaurant the waiter decides where you sit")
-            else:
-                return Description(False, "because in a quiet restaurant the waiter doesn't have to decide where you sit")
-        else:
-            raise ValueError(f"Invalid consequent: {consequent}")
-
     def converse(self):
         dialog_state = DialogState()
         dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
@@ -406,33 +369,29 @@ class DialogManager:
             dialog_state.output_system_message()
 
         if dialog_state.extra_requirements_suggestions:
-            consequent = ""
-            while not (m := re.search(r"(romantic|children|touristic|assigned seats)", consequent)):
-                consequent = input(
-                    "Please specify your additional requirement (romantic, children, touristic, or assigned "
-                    "seats):\n")
+            reason = Reasoning()
+            extra_requirements = reason.handle_extra_requirements(dialog_state.extra_requirements_suggestions)
 
-            consequent = m.group(1)
+            if extra_requirements:
+                suggestion, reason, consequent = extra_requirements
 
-            suggestions = self.get_extra_requirements_suggestions(dialog_state.extra_requirements_suggestions, consequent)
-
-            if not suggestions:
-                print("Sorry, there are no suggestions given your additional requirements.")
+                print(f"{DialogState.suggestion_string(suggestion, ask_for_additional=False)}\n"
+                      f"Its crowdedness is usually '{suggestion.crowdedness}', the usual length of stay is '"
+                      f"{suggestion.length_of_stay}', and the food quality is '{suggestion.food_quality}'.\n"
+                      f"It's classified as '{consequent}' because {reason}.")
             else:
-                # return a random suggestion
-                print(f"Here's a suggestion: "
-                      f"{DialogState.suggestion_string(suggestions[0][0], ask_for_additional=False)}.\n"
-                      f"It's {consequent} {suggestions[0][1]}.")
+                print("Sorry, there are no suggestions given your additional requirements.")
 
     @staticmethod
     def extract_preferences(user_input, preference_type: PreferenceRequest, levenshtein_distance) -> Dict[str, List[str]]:
         return inform_keyword_finder(user_input, preference_type.value, levenshtein_distance)
-    
+
     @staticmethod
     def extract_restaurant_info(user_input, levenshtein_distance):
         return request_keyword_finder(user_input, levenshtein_distance)
 
 
 if __name__ == "__main__":
-    manager = DialogManager(FeedForwardNN(train_data, debug=DEBUG_MODE))
+    # manager = DialogManager(FeedForwardNN(train_data, debug=DEBUG_MODE))
+    manager = DialogManager(LogisticRegressionModel(train_data))
     manager.converse()
