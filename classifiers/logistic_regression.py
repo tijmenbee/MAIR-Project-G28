@@ -27,7 +27,7 @@ class LogisticRegressionModel:
 
 
 if __name__ == "__main__":
-    from data import train_data, dev_data, deduped_train_data
+    from data.data_processor import deduped_train_data
 
     n = LogisticRegressionModel(deduped_train_data)
 

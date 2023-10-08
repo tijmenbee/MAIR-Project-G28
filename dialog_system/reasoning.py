@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from typing import List, Tuple, Optional, Dict
 
-from dialog_state import DialogState, Restaurant
+from dialog_system.dialog_state import DialogState, Restaurant
 
 
 @dataclass

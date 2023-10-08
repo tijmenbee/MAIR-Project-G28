@@ -11,7 +11,7 @@ nltk.download('words', quiet=True)
 
 from nltk.corpus import words
 
-file = pd.read_csv("restaurant_info.csv")
+file = pd.read_csv("data/raw_data/restaurant_info.csv")
 
 
 KEYWORDS_AREA = file["area"].unique()

@@ -2,7 +2,7 @@ import re
 from collections import Counter, defaultdict
 from typing import List
 
-from data import train_data
+from data.data_processor import train_data
 
 RULES_MORE = [  # 93.1%
     ("phone", "request"),

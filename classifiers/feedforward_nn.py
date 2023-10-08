@@ -8,7 +8,7 @@ from keras.preprocessing.text import Tokenizer
 from keras.models import Sequential
 from keras.layers import Dense
 
-from data import ACTS
+from data.data_processor import ACTS
 
 
 VOCAB_SIZE = 1000

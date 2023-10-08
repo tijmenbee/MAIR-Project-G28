@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 
 from config import Config
 from dialog_state import DialogState, Restaurant, PreferenceRequest
-from inform_keywords import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
+from keyword_extractor import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
 
 
 class DialogManager:
@@ -12,7 +12,7 @@ class DialogManager:
         self.act_classifier = act_classifier
         self.all_restaurants = []
 
-        with open('restaurant_info.csv', 'r') as f:
+        with open('data/raw_data/restaurant_info.csv', 'r') as f:
             reader = csv.reader(f)
             for row in reader:
                 self.all_restaurants.append(Restaurant(*row))

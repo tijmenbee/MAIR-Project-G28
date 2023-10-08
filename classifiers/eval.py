@@ -1,13 +1,11 @@
-from baseline_majority import BaselineMajority
-from baseline_rulebased import BaselineRuleBased
+from classifiers.baseline_majority import BaselineMajority
+from classifiers.baseline_rulebased import BaselineRuleBased
 
 from data import train_data, dev_data, deduped_train_data, deduped_dev_data, ACTS
-from decision_tree import DecisionTree
-from feedforward_nn import FeedForwardNN
-from logistic_regression import LogisticRegressionModel
+from classifiers.decision_tree import DecisionTree
+from classifiers.feedforward_nn import FeedForwardNN
+from classifiers.logistic_regression import LogisticRegressionModel
 from rulebased_nn_merge import RuleBasedNN
-import numpy as np
-import pandas as pd
 
 TRAINING = True
 
