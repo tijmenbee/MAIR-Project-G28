@@ -131,11 +131,11 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
     @staticmethod
     def request_str(suggestion: Restaurant, request_dict) -> str:
         request_str = f"Of course, for {suggestion.name} here is the "
-        if request_dict["phonenumber"]:
+        if request_dict.get("phonenumber"):
             request_str = request_str + f"phone number: {suggestion.phone}. "
-        if request_dict["address"]:
+        if request_dict.get("address"):
             request_str = request_str + f"address: {suggestion.address}. "
-        if request_dict["postcode"]:
+        if request_dict.get("postcode"):
             request_str = request_str + f"postcode: {suggestion.postcode}. "
 
         return request_str
@@ -389,31 +389,17 @@ class DialogManager:
             raise ValueError(f"Invalid consequent: {consequent}")
 
     def converse(self):
-        system_states = []
-
         dialog_state = DialogState()
         dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
         dialog_state.output_system_message()
         dialog_state.ask_for_missing_info()
-        sys_message = dialog_state.system_message
         dialog_state.output_system_message()
         while not dialog_state.conversation_over:
             user_input = input("> ").lower().strip()
             if user_input == "-config":
                 manager.config(dialog_state)
-            system_states.append(SystemState(
-                system_message=sys_message,
-                user_input=user_input,
-                act=self.act_classifier.predict([user_input])[0],
-                pricerange=dialog_state._pricerange,
-                area=dialog_state._area,
-                food=dialog_state._food,
-                excluded_restaurants=dialog_state._excluded_restaurants,
-                current_suggestion=dialog_state.current_suggestion,
-                current_preference_request=dialog_state.current_preference_request
-            ))
+
             dialog_state = self.transition(dialog_state, user_input)
-            sys_message = dialog_state.system_message
             dialog_state.output_system_message()
 
         if dialog_state.extra_requirements_suggestions:
@@ -435,12 +421,6 @@ class DialogManager:
                       f"{DialogState.suggestion_string(suggestions[0][0], ask_for_additional=False)}.\n"
                       f"It's {consequent} {suggestions[0][1]}.")
 
-
-        # print("Conversation over.")
-        # print("Save conversation into test file? (y/n)")
-        # if input("> ").lower().strip() == "y":
-        #     save_conversation(system_states)
-
     def config(self, dialog_state: DialogState):
         setconfig = True
         while setconfig:
@@ -456,7 +436,7 @@ class DialogManager:
             if splitinput[0] == "debug":
                 dialog_state.config_debugMode = (splitinput[1].lower() == 'true')
             if splitinput[0] == "levenshtein":
-                dialog_state.config_levenshtein =  [int(i) for i in text.split() if i.isdigit()][0]
+                dialog_state.config_levenshtein = [int(i) for i in text.split() if i.isdigit()][0]
         return
         dialog_state.config_typoCheck
         dialog_state.config_capsLock
