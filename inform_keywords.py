@@ -11,20 +11,20 @@ file = pd.read_csv("restaurant_info.csv")
 
 
 KEYWORDS_AREA = file["area"].unique()
+KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
+
 KEYWORDS_PRICE = file["pricerange"].unique()
 KEYWORDS_FOOD = file["food"].unique()
 
 KEYWORDS_POSTCODE = ["postcode","post","postal"]
-KEYWORDS_ADDRESS = ["address","adress","addres"]
-KEYWORDS_PHONENUMBER = ["phone","number"]
+KEYWORDS_ADDRESS = ["address", "where", "location"]
+KEYWORDS_PHONENUMBER = ["phone", "number"]
 
 
 FOOD_WORDS = ["food", "type"]
 PRICE_WORDS = ["price","pricerange","money"]
 AREA_WORDS = ["part", "town", "city", "location"]
 
-
-KEYWORDS_AREA = [x for x in KEYWORDS_AREA if str(x) != 'nan']
 
 LEVENSHTEIN_DISTANCE = 3
 
@@ -34,21 +34,20 @@ REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care|mind)", r
 
 # todo solution for: no, I want spanish
 
-def request_keyword_finder(sentence: str, levenshtein_distance = LEVENSHTEIN_DISTANCE):
+def request_keyword_finder(sentence: str, levenshtein_distance=LEVENSHTEIN_DISTANCE):
     request_dict = {"postcode":False, "address":False, "phonenumber":False}
     list_keywords = {"postcode":KEYWORDS_POSTCODE, "address":KEYWORDS_ADDRESS, "phonenumber":KEYWORDS_PHONENUMBER}
 
     for word in sentence.split():
-        for item in list_keywords.keys():
-            for keyword in list_keywords[item]:
-                if adjusted_Levenshtein(keyword, word) < levenshtein_distance:
-                    request_dict[item] = True
-                    break
+        for info, keyword in list_keywords.items():
+            if adjusted_Levenshtein(keyword, word) < levenshtein_distance:
+                request_dict[info] = True
+                break
 
     return request_dict
 
+
 def inform_keyword_finder(sentence: str, type = None, levenshtein_distance = LEVENSHTEIN_DISTANCE):
-    
     area = list()
     price = list()
     food = list()

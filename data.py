@@ -22,4 +22,5 @@ def extract_data():
     return ACTS, train_data, dev_data, test_data, deduped_train_data, deduped_dev_data, deduped_test_data
 
 
+# To then be used in other files:
 ACTS, train_data, dev_data, test_data, deduped_train_data, deduped_dev_data, deduped_test_data = extract_data()

@@ -131,11 +131,11 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
     @staticmethod
     def request_str(suggestion: Restaurant, request_dict) -> str:
         request_str = f"Of course, for {suggestion.name} here is the "
-        if request_dict["phonenumber"]:
+        if request_dict.get("phonenumber"):
             request_str = request_str + f"phone number: {suggestion.phone}. "
-        if request_dict["address"]:
+        if request_dict.get("address"):
             request_str = request_str + f"address: {suggestion.address}. "
-        if request_dict["postcode"]:
+        if request_dict.get("postcode"):
             request_str = request_str + f"postcode: {suggestion.postcode}. "
 
         return request_str
@@ -237,19 +237,23 @@ class DialogManager:
         # We keep the implementation for the dialog system and the reasoning component separate. If a suggestion is
         # made, we inform the user that they can ask for additional requirements. If they do, we leave the dialog system
         # (which implements 1b), and move to the reasoning component (which implements 1c).
-        if adjusted_Levenshtein("additional requirements", utterance) < 3:
+        if adjusted_Levenshtein("additional requirements", utterance) < dialog_state.config_levenshtein:
             dialog_state.extra_requirements_suggestions = dialog_state.calculate_suggestions(self.all_restaurants)
             dialog_state.system_message = ""
             dialog_state.conversation_over = True
             return dialog_state
 
+        if adjusted_Levenshtein("foodlist", utterance) < dialog_state.config_levenshtein:
+            dialog_state.system_message = (f"Here is a list of all possible food types:\n" +
+                                           '\n'.join(sorted(self.foodlist)))
+            return dialog_state
+
         act = self.act_classifier.predict([utterance])[0]
 
         extracted_preferences = self.extract_preferences(utterance, dialog_state.current_preference_request, dialog_state.config_levenshtein)
-     
-        
+
         if dialog_state.config_typoCheck:
-            # Checks if typo's are spotted
+            # Checks if typos are spotted
             for word, is_correct in itertools.chain(*extracted_preferences.values()):
                 if not is_correct:
                     dialog_state.typo_list.append(word)
@@ -260,13 +264,12 @@ class DialogManager:
                     dialog_state.previous_act = act
                     dialog_state.confirm_levenshtein()
                     return dialog_state
-            # Checks if typo's are confirmed
+            # Checks if typos are confirmed
             if dialog_state.confirm_typo:
                 if act == "affirm":
                     extracted_preferences = dialog_state.previous_preferences
                     act = dialog_state.previous_act
                     dialog_state.confirm_typo = False
-
 
         extracted_preferences = {k: [v[0] for v in value] for k, value in extracted_preferences.items()}
         if dialog_state.config_debugMode:
@@ -331,9 +334,9 @@ class DialogManager:
             dialog_state.ask_for_confirmation()
 
         if act == "request":
-            extracted_info = self.extract_restaurant_info(utterance)
+            extracted_info = self.extract_restaurant_info(utterance, dialog_state.config_levenshtein)
             if dialog_state.current_suggestion:
-                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info, dialog_state.config_levenshtein)
+                dialog_state.system_message = dialog_state.request_str(dialog_state.current_suggestion, extracted_info)
             else:
                 dialog_state.system_message = ("Sorry, I don't have a suggestion right now. Please provide more "
                                                "information about your preferences.")
@@ -389,31 +392,17 @@ class DialogManager:
             raise ValueError(f"Invalid consequent: {consequent}")
 
     def converse(self):
-        system_states = []
-
         dialog_state = DialogState()
         dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
         dialog_state.output_system_message()
         dialog_state.ask_for_missing_info()
-        sys_message = dialog_state.system_message
         dialog_state.output_system_message()
         while not dialog_state.conversation_over:
             user_input = input("> ").lower().strip()
             if user_input == "-config":
                 manager.config(dialog_state)
-            system_states.append(SystemState(
-                system_message=sys_message,
-                user_input=user_input,
-                act=self.act_classifier.predict([user_input])[0],
-                pricerange=dialog_state._pricerange,
-                area=dialog_state._area,
-                food=dialog_state._food,
-                excluded_restaurants=dialog_state._excluded_restaurants,
-                current_suggestion=dialog_state.current_suggestion,
-                current_preference_request=dialog_state.current_preference_request
-            ))
+
             dialog_state = self.transition(dialog_state, user_input)
-            sys_message = dialog_state.system_message
             dialog_state.output_system_message()
 
         if dialog_state.extra_requirements_suggestions:
@@ -435,17 +424,12 @@ class DialogManager:
                       f"{DialogState.suggestion_string(suggestions[0][0], ask_for_additional=False)}.\n"
                       f"It's {consequent} {suggestions[0][1]}.")
 
-
-        # print("Conversation over.")
-        # print("Save conversation into test file? (y/n)")
-        # if input("> ").lower().strip() == "y":
-        #     save_conversation(system_states)
-
     def config(self, dialog_state: DialogState):
         setconfig = True
         while setconfig:
             print(f"Current settings: \n capslock: \t {str(dialog_state.config_capsLock)} \n typochecker: \t {str(dialog_state.config_typoCheck)} \n debug: \t {str(dialog_state.config_debugMode)} \n levenshtein distance: \t {str(dialog_state.config_levenshtein)}")
-            text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\" \n To go back, type \'return\'")
+            text = input("To change a setting, type \"[setting] [value]\". e.g. \"capslock True\"\n To go back, "
+                         "type \'return\':\n")
             splitinput = str(text).split()
             if splitinput[0] == "return":
                 setconfig = False
@@ -456,7 +440,7 @@ class DialogManager:
             if splitinput[0] == "debug":
                 dialog_state.config_debugMode = (splitinput[1].lower() == 'true')
             if splitinput[0] == "levenshtein":
-                dialog_state.config_levenshtein =  [int(i) for i in text.split() if i.isdigit()][0]
+                dialog_state.config_levenshtein = [int(i) for i in text.split() if i.isdigit()][0]
         return
         dialog_state.config_typoCheck
         dialog_state.config_capsLock
@@ -469,7 +453,6 @@ class DialogManager:
     
     @staticmethod
     def extract_restaurant_info(user_input, levenshtein_distance):
-        print(user_input)
         return request_keyword_finder(user_input, levenshtein_distance)
 
 
