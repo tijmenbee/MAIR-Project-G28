@@ -1,9 +1,11 @@
+import logging
+
 import pandas as pd
 import re
 import Levenshtein
 import nltk
 
-nltk.download('words')
+nltk.download('words', quiet=True)
 
 from nltk.corpus import words
 

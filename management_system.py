@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Dict, Tuple
 
-from data import deduped_train_data
+from data import train_data
+from feedforward_nn import FeedForwardNN
 from inform_keywords import inform_keyword_finder, adjusted_levenshtein, request_keyword_finder
 from logistic_regression import LogisticRegressionModel
 
@@ -157,7 +158,7 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
                                   "all possible food types, say 'foodlist'."
             self.current_preference_request = PreferenceRequest.FOOD
         else:
-            self.system_message = "I'm sorry, I don't understand. Could you repeat that?"  # Shouldn't happen!
+            self.system_message = "I'm sorry, I don't understand. Could you repeat that?"
 
     def ask_for_confirmation(self) -> None:
         confirmation_str = "Please confirm the following (yes/no):\n"
@@ -242,6 +243,10 @@ class DialogManager:
         if adjusted_levenshtein("foodlist", utterance) < dialog_state.config.levenshtein:
             dialog_state.system_message = (f"Here is a list of all possible food types:\n" +
                                            '\n'.join(sorted(self.foodlist)))
+            return dialog_state
+
+        if utterance == "-config":
+            dialog_state.set_config()
             return dialog_state
 
         act = self.act_classifier.predict([utterance])[0]
@@ -339,7 +344,7 @@ class DialogManager:
                                                "information about your preferences.")
 
         if act == "null":
-            dialog_state.system_message = "Sorry, I don't understand. Could you repeat that?"
+            dialog_state.system_message = "Sorry, I didn't quite get that. Could you repeat yourself?"
 
         if act == "restart":
             dialog_state = DialogState()
@@ -396,8 +401,6 @@ class DialogManager:
         dialog_state.output_system_message()
         while not dialog_state.conversation_over:
             user_input = input("> ").lower().strip()
-            if user_input == "-config":
-                dialog_state.set_config()
 
             dialog_state = self.transition(dialog_state, user_input)
             dialog_state.output_system_message()
@@ -431,5 +434,5 @@ class DialogManager:
 
 
 if __name__ == "__main__":
-    manager = DialogManager(LogisticRegressionModel(deduped_train_data))
+    manager = DialogManager(FeedForwardNN(train_data, debug=DEBUG_MODE))
     manager.converse()
