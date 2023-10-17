@@ -49,6 +49,9 @@ class DialogState:
 
         self.config = config
 
+        from strings import strings
+        self.strings = strings["informal" if self.config.informal else "neutral"]["DIALOG_STATE"]
+
     def output_system_message(self) -> None:
         if self.system_message:
             time.sleep(self.config.system_delay)
@@ -77,29 +80,23 @@ class DialogState:
         self._excluded_restaurants = excluded_restaurants
         self.current_suggestions_index = 0
 
-    @staticmethod
-    def suggestion_string(suggestion: Restaurant, ask_for_additional=True) -> str:
-        suggestion_str = f"""Here's a suggestion: {suggestion.name}!
-It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food."""
-
+    def suggestion_string(self, suggestion: Restaurant, ask_for_additional=True) -> str:
+        suggestion_str = self.strings["SUGGESTION_STRING"]["INITIAL"].format(suggestion=suggestion)
         if ask_for_additional:
-            suggestion_str += (" You can ask for its address, phone number, or postcode."
-                               "\n(if you want to check for additional requirements (e.g. romantic, children, "
-                               "touristic, assigned seats), say 'additional requirements')")
+            suggestion_str += " " + self.strings["SUGGESTION_STRING"]["ASK_ADDITIONAL_REQS"]
 
         return suggestion_str
 
-    @staticmethod
-    def request_string(suggestion: Restaurant, requested_info: Set[str]) -> str:
-        unknown_string = "unknown, unfortunately"
-        request_string = f"For '{suggestion.name}': "
+    def request_string(self, suggestion: Restaurant, requested_info: Set[str]) -> str:
+        unknown_string = self.strings["REQUEST_STRING"]["UNKNOWN"]
+        request_string = self.strings["REQUEST_STRING"]["INITIAL"].format(suggestion=suggestion)
 
         if "phone number" in requested_info:
-            request_string += f"\n- the phone number is {suggestion.phone if suggestion.phone else unknown_string}"
+            request_string += "\n- " + self.strings['REQUEST_STRING']['PHONE_NUMBER'].format(suggestion=suggestion, unknown_string=unknown_string)
         if "address" in requested_info:
-            request_string += f"\n- the address is {suggestion.address if suggestion.address else unknown_string}"
+            request_string += "\n- " + self.strings['REQUEST_STRING']['ADDRESS'].format(suggestion=suggestion, unknown_string=unknown_string)
         if "postcode" in requested_info:
-            request_string += f"\n- the postcode is {suggestion.postcode if suggestion.postcode else unknown_string}"
+            request_string += "\n- " + self.strings['REQUEST_STRING']['POSTCODE'].format(suggestion=suggestion, unknown_string=unknown_string)
 
         return request_string
 
@@ -118,7 +115,7 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
             self.system_message = self.suggestion_string(self.current_suggestion)
             self.current_suggestions_index += 1
         else:  # No suggestions exist
-            self.system_message = "Sorry, there's no suggestions given your requirements. Please try something else."
+            self.system_message = self.strings["SUGGESTION_STRING"]["NO_SUGGESTION_AVAILABLE"]
 
     def calculate_suggestions(self, restaurants: List[Restaurant]) -> List[Restaurant]:
         suggestions = []
@@ -135,25 +132,23 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
 
     def ask_for_missing_info(self) -> None:
         if not self._pricerange:
-            self.system_message = "What is your price range (cheap, moderate, expensive, or no preference)?"
+            self.system_message = self.strings["ASK_MISSING_INFO"]["PRICERANGE"]
             self.current_preference_request = PreferenceRequest.PRICERANGE
         elif not self._area:
-            self.system_message = "What area would you like to eat in (north, east, south, west, centre, " \
-                                  "or no preference)?"
+            self.system_message = self.strings["ASK_MISSING_INFO"]["AREA"]
             self.current_preference_request = PreferenceRequest.AREA
         elif not self._food:
-            self.system_message = "What type of food would you like to eat (or no preference)? If you want a list of " \
-                                  "all possible food types, say 'foodlist'."
+            self.system_message = self.strings["ASK_MISSING_INFO"]["FOOD"]
             self.current_preference_request = PreferenceRequest.FOOD
         else:
-            self.system_message = "I'm sorry, I don't understand. Could you repeat that?"
+            self.system_message = self.strings["ASK_MISSING_INFO"]["OTHER"]
 
     def ask_for_confirmation(self) -> None:
-        confirmation_str = "Please confirm the following (yes/no):\n"
+        confirmation_str = self.strings["ASK_FOR_CONFIRMATION"]["INITIAL"] + "\n"
 
-        confirmation_str += f"Price range: {', '.join(self._pricerange)}\n"
-        confirmation_str += f"Area: {', '.join(self._area)}\n"
-        confirmation_str += f"Food: {', '.join(self._food)}\n"
+        confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["PRICERANGE"].format(priceranges=', '.join(self._pricerange)) + "\n"
+        confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["AREA"].format(areas=', '.join(self._area)) + "\n"
+        confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["FOOD"].format(self=self) + "\n"
 
         self.system_message = confirmation_str
 
@@ -172,5 +167,5 @@ It is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It ser
         return updated
 
     def confirm_levenshtein(self) -> None:
-        self.system_message = f"Did you mean the following: {' and '.join(self.typo_list)}?"
+        self.system_message = self.strings["LEVENSHTEIN"]["CONFIRM"].format(self=self)
         self.typo_list = []

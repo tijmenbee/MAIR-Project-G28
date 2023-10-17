@@ -120,14 +120,14 @@ class Reasoning:
         return result
 
 
-def handle_reasoning(suggestions):
+def handle_reasoning(suggestions, config):
     reasoning = Reasoning()
     extra_requirements_info = reasoning.handle_extra_requirements(suggestions)
 
     if extra_requirements_info:
         suggestion, reason, consequent = extra_requirements_info
 
-        print(f"{DialogState.suggestion_string(suggestion, ask_for_additional=False)}\n"
+        print(f"{DialogState(config).suggestion_string(suggestion, ask_for_additional=False)}\n"
               f"Its crowdedness is usually '{suggestion.crowdedness}', the usual length of stay is '"
               f"{suggestion.length_of_stay}', and the food quality is '{suggestion.food_quality}'.\n"
               f"It's classified as '{consequent}' because {reason}.")

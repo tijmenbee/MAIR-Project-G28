@@ -26,6 +26,9 @@ class DialogManager:
 
         self.config = config
 
+        from strings import strings
+        self.strings = strings["informal" if self.config.informal else "neutral"]["DIALOG_MANAGER"]
+
     def transition(self, dialog_state: DialogState, utterance: str) -> DialogState:
         # We keep the implementation for the dialog system and the reasoning component separate. If a suggestion is
         # made, we inform the user that they can ask for additional requirements. If they do, we leave the dialog system
@@ -37,8 +40,7 @@ class DialogManager:
             return dialog_state
 
         if adjusted_levenshtein("foodlist", utterance) < dialog_state.config.levenshtein:
-            dialog_state.system_message = (f"Here is a list of all possible food types:\n" +
-                                           '\n'.join(sorted(self.foodlist)))
+            dialog_state.system_message = self.strings["FOODLIST"].format(self=self)
             return dialog_state
 
         if utterance == "-config":
@@ -83,7 +85,7 @@ class DialogManager:
 
         if act == "bye":
             dialog_state.conversation_over = True
-            dialog_state.system_message = "Goodbye! Thanks for using our restaurant recommender."
+            dialog_state.system_message = self.strings["GOODBYE"]
 
         if act == "inform":
             dialog_state.update_preferences(extracted_preferences)
@@ -106,7 +108,7 @@ class DialogManager:
                 elif preferences_changed:  # Preferences changed - make new suggestion
                     dialog_state.ask_for_confirmation()
                 else:  # User didn't provide any new prefs - ask for them.
-                    dialog_state.system_message = "Sorry for misunderstanding - please provide your preferences again."
+                    dialog_state.system_message = self.strings["NO_NEW_PREFERENCES"]
 
             else:  # User denies suggestion
                 if not preferences_changed:  # User didn't provide any new prefs - give next suggestion
@@ -123,7 +125,7 @@ class DialogManager:
 
         if act == "thankyou":
             if dialog_state.can_make_suggestion():
-                dialog_state.system_message = "You're welcome!"
+                dialog_state.system_message = self.strings["YOURE_WELCOME"]
                 dialog_state.conversation_over = True
             else:
                 dialog_state.ask_for_missing_info()
@@ -136,11 +138,10 @@ class DialogManager:
                 requested_info = self.extract_restaurant_info(utterance, dialog_state.config.levenshtein)
                 dialog_state.system_message = dialog_state.request_string(dialog_state.current_suggestion, requested_info)
             else:
-                dialog_state.system_message = ("Sorry, I don't have a suggestion right now. Please provide more "
-                                               "information about your preferences.")
+                dialog_state.system_message = self.strings["NO_SUGGESTION_FROM_REQLIST"]
 
         if act == "null":
-            dialog_state.system_message = "Sorry, I didn't quite get that. Could you repeat yourself?"
+            dialog_state.system_message = self.strings["NULL"]
 
         if act == "restart":
             dialog_state = DialogState(self.config)
@@ -153,7 +154,7 @@ class DialogManager:
 
     def converse(self) -> Optional[List[Restaurant]]:
         dialog_state = DialogState(self.config)
-        dialog_state.system_message = "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
+        dialog_state.system_message = self.strings["WELCOME"]
         dialog_state.output_system_message()
 
         dialog_state.ask_for_missing_info()
