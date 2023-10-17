@@ -26,11 +26,11 @@
         "FOOD": "Food: {foods}"
       },
       "LEVENSHTEIN": {
-        "CONFIRM": "Did you mean the following: {' and '.join(self.typo_list)}?"
+        "CONFIRM": "Did you mean the following: {typo_list}?"
       }
     },
     "DIALOG_MANAGER": {
-      "FOODLIST": "Here is a list of all possible food types:\n{'\n'.join(sorted(self.foodlist))}",
+      "FOODLIST": "Here is a list of all possible food types:\n{foodlist}",
       "GOODBYE": "Goodbye! Thanks for using our restaurant recommender.",
       "NO_NEW_PREFERENCES": "Sorry for misunderstanding - please provide your preferences again.",
       "YOURE_WELCOME": "You're welcome!",

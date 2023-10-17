@@ -40,7 +40,7 @@ class DialogManager:
             return dialog_state
 
         if adjusted_levenshtein("foodlist", utterance) < dialog_state.config.levenshtein:
-            dialog_state.system_message = self.strings["FOODLIST"].format(self=self)
+            dialog_state.system_message = self.strings["FOODLIST"].format(foodlist='\n'.join(sorted(self.foodlist)))
             return dialog_state
 
         if utterance == "-config":

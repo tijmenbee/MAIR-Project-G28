@@ -148,7 +148,7 @@ class DialogState:
 
         confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["PRICERANGE"].format(priceranges=', '.join(self._pricerange)) + "\n"
         confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["AREA"].format(areas=', '.join(self._area)) + "\n"
-        confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["FOOD"].format(self=self) + "\n"
+        confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["FOOD"].format(foods=', '.join(self._food)) + "\n"
 
         self.system_message = confirmation_str
 
@@ -167,5 +167,5 @@ class DialogState:
         return updated
 
     def confirm_levenshtein(self) -> None:
-        self.system_message = self.strings["LEVENSHTEIN"]["CONFIRM"].format(self=self)
+        self.system_message = self.strings["LEVENSHTEIN"]["CONFIRM"].format(typo_list=' and '.join(self.typo_list))
         self.typo_list = []
