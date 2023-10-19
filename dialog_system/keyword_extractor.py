@@ -29,7 +29,7 @@ FOOD_WORDS = ["food", "type", "cuisine"]
 PRICE_WORDS = ["price", "pricerange", "money", "cost"]
 AREA_WORDS = ["part", "town", "city", "location", "area"]
 
-REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care|mind)", r"\bany"]
+REGEX_ANY = [r"(doesn'?t|don'?t|does not|do not)\s?\w*?\s?(matter|care|mind)", r"\bany", r"no\spref(?:erence)?s?"]
 
 
 LEVENSHTEIN_DISTANCE = 3
@@ -71,6 +71,8 @@ def inform_keyword_finder(sentence: str, type=None, levenshtein_distance=LEVENSH
                     temp_type = 'food'
 
             for word in AREA_WORDS:  # Ditto for area words
+                if word == "center":
+                    word = "centre"
                 if sentence.find(word) == -1:
                     continue
                 if abs(sentence.find(word)-any_location) < smallest_distance:
@@ -97,6 +99,8 @@ def inform_keyword_finder(sentence: str, type=None, levenshtein_distance=LEVENSH
                 break
 
         for keyword in KEYWORDS_AREA:
+            if word == "center":
+                word = "centre"
             if adjusted_levenshtein(keyword, word) < levenshtein_distance:
                 area.append((keyword, keyword == word))
                 inform_dict['area'] = area

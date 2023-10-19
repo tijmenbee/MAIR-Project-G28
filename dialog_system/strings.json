@@ -3,14 +3,14 @@
     "DIALOG_STATE": {
       "SUGGESTION_STRING": {
         "INITIAL": "Here's a suggestion: {suggestion.name}!\nIt is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food.",
-        "ASK_ADDITIONAL_REQS": "You can ask for its address, phone number, or postcode.",
+        "ASK_ADDITIONAL_REQS": "You can ask for its address, phone number, or postcode.  You may also ask for a different suggestion.",
         "NO_SUGGESTION_AVAILABLE": "There's no suggestions given your requirements. Please try something else."
       },
       "REQUEST_STRING": {
         "INITIAL": "For '{suggestion.name}': ",
-        "PHONE_NUMBER": "the phone number is {suggestion.phone if suggestion.phone else unknown_string}",
-        "ADDRESS": "the address is {suggestion.address if suggestion.address else unknown_string}",
-        "POSTCODE": "the postcode is {suggestion.postcode if suggestion.postcode else unknown_string}",
+        "PHONE_NUMBER": "the phone number is '{phone_number}'",
+        "ADDRESS": "the address is '{address}'",
+        "POSTCODE": "the postcode is '{postcode}'",
         "UNKNOWN": "not known"
       },
       "ASK_MISSING_INFO": {
@@ -43,14 +43,14 @@
     "DIALOG_STATE": {
       "SUGGESTION_STRING": {
         "INITIAL": "How about '{suggestion.name}'?\nIt is {suggestion.pricerange}ly priced, in the {suggestion.area} of town, and has {suggestion.food} food!",
-        "ASK_ADDITIONAL_REQS": "Now, would you like its address, phone number, or postcode?",
+        "ASK_ADDITIONAL_REQS": "Now, would you like its address, phone number, or postcode? Otherwise, feel free to ask for a different suggestion.",
         "NO_SUGGESTION_AVAILABLE": "Unfortunately, there are no suggestions given your requirements. Please try something else!"
       },
       "REQUEST_STRING": {
         "INITIAL": "So, for '{suggestion.name}': ",
-        "PHONE_NUMBER": "the phone number is {phone_number}",
-        "ADDRESS": "the address is {address}",
-        "POSTCODE": "the postcode is {postcode}",
+        "PHONE_NUMBER": "the phone number is '{phone_number}'",
+        "ADDRESS": "the address is '{address}'",
+        "POSTCODE": "the postcode is '{postcode}'",
         "UNKNOWN": "not known"
       },
       "ASK_MISSING_INFO": {
