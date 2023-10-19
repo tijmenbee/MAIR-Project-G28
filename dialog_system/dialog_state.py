@@ -92,11 +92,14 @@ class DialogState:
         request_string = self.strings["REQUEST_STRING"]["INITIAL"].format(suggestion=suggestion)
 
         if "phone number" in requested_info:
-            request_string += "\n- " + self.strings['REQUEST_STRING']['PHONE_NUMBER'].format(suggestion=suggestion, unknown_string=unknown_string)
+            request_string += "\n- " + self.strings['REQUEST_STRING']['PHONE_NUMBER'].format(
+                phone_number=suggestion.phone if suggestion.phone else unknown_string)
         if "address" in requested_info:
-            request_string += "\n- " + self.strings['REQUEST_STRING']['ADDRESS'].format(suggestion=suggestion, unknown_string=unknown_string)
+            request_string += "\n- " + self.strings['REQUEST_STRING']['ADDRESS'].format(
+                address=suggestion.address if suggestion.address else unknown_string)
         if "postcode" in requested_info:
-            request_string += "\n- " + self.strings['REQUEST_STRING']['POSTCODE'].format(suggestion=suggestion, unknown_string=unknown_string)
+            request_string += "\n- " + self.strings['REQUEST_STRING']['POSTCODE'].format(
+                postcode=suggestion.postcode if suggestion.postcode else unknown_string)
 
         return request_string
 

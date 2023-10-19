@@ -6,7 +6,7 @@ TYPO_CHECK = False
 LEVENSHTEIN_DISTANCE = 3
 SYSTEM_DELAY = 0
 DEBUG_MODE = False
-INFORMAL = False
+INFORMAL = True
 
 
 @dataclass

@@ -3,24 +3,24 @@
     "DIALOG_STATE": {
       "SUGGESTION_STRING": {
         "INITIAL": "Here's a suggestion: {suggestion.name}!\nIt is priced '{suggestion.pricerange}', in the {suggestion.area} of town. It serves {suggestion.food} food.",
-        "ASK_ADDITIONAL_REQS": "You can ask for its address, phone number, or postcode.\n(if you want to check for additional requirements (e.g. romantic, children, touristic, assigned seats), say 'additional requirements')",
-        "NO_SUGGESTION_AVAILABLE": "Sorry, there's no suggestions given your requirements. Please try something else."
+        "ASK_ADDITIONAL_REQS": "You can ask for its address, phone number, or postcode.",
+        "NO_SUGGESTION_AVAILABLE": "There's no suggestions given your requirements. Please try something else."
       },
       "REQUEST_STRING": {
         "INITIAL": "For '{suggestion.name}': ",
         "PHONE_NUMBER": "the phone number is {suggestion.phone if suggestion.phone else unknown_string}",
         "ADDRESS": "the address is {suggestion.address if suggestion.address else unknown_string}",
         "POSTCODE": "the postcode is {suggestion.postcode if suggestion.postcode else unknown_string}",
-        "UNKNOWN": "unknown, unfortunately"
+        "UNKNOWN": "not known"
       },
       "ASK_MISSING_INFO": {
         "PRICERANGE": "What is your price range (cheap, moderate, expensive, or no preference)?",
         "AREA": "What area would you like to eat in (north, east, south, west, centre, or no preference)?",
         "FOOD": "What type of food would you like to eat (or no preference)? If you want a list of all possible food types, say 'foodlist'.",
-        "OTHER": "I'm sorry, I don't understand. Could you repeat that?"
+        "OTHER": "I could not understand that. Could you repeat it?"
       },
       "ASK_FOR_CONFIRMATION": {
-        "INITIAL": "Please confirm the following (yes/no):",
+        "INITIAL": "Confirm the following (yes/no):",
         "PRICERANGE": "Price range: {priceranges}",
         "AREA": "Area: {areas}",
         "FOOD": "Food: {foods}"
@@ -31,12 +31,52 @@
     },
     "DIALOG_MANAGER": {
       "FOODLIST": "Here is a list of all possible food types:\n{foodlist}",
-      "GOODBYE": "Goodbye! Thanks for using our restaurant recommender.",
-      "NO_NEW_PREFERENCES": "Sorry for misunderstanding - please provide your preferences again.",
+      "GOODBYE": "Goodbye. Thank you for using our restaurant recommender.",
+      "NO_NEW_PREFERENCES": "I could not understand that - please provide your preferences again.",
+      "YOURE_WELCOME": "You're welcome.",
+      "NO_SUGGESTION_FROM_REQUEST": "I don't have a suggestion right now. Please provide more information about your preferences.",
+      "NULL": "I could not understand that. Please repeat yourself.",
+      "WELCOME": "Welcome to the restaurant recommendation system."
+    }
+  },
+  "informal": {
+    "DIALOG_STATE": {
+      "SUGGESTION_STRING": {
+        "INITIAL": "How about '{suggestion.name}'?\nIt is '{suggestion.pricerange}ly' priced, in the {suggestion.area} of town, and has {suggestion.food} food!",
+        "ASK_ADDITIONAL_REQS": "Now, would you like its address, phone number, or postcode?",
+        "NO_SUGGESTION_AVAILABLE": "Unfortunately, there are no suggestions given your requirements. Please try something else!"
+      },
+      "REQUEST_STRING": {
+        "INITIAL": "So, for '{suggestion.name}': ",
+        "PHONE_NUMBER": "the phone number is {phone_number}",
+        "ADDRESS": "the address is {address}",
+        "POSTCODE": "the postcode is {postcode}",
+        "UNKNOWN": "not known"
+      },
+      "ASK_MISSING_INFO": {
+        "PRICERANGE": "We've got cheap, moderate, and expensive restaurants. Which would you like? No preference is also okay.",
+        "AREA": "What part of town do you want to eat in? You can go to the centre, north, south, east, or west. Anywhere is fine too.",
+        "FOOD": "What kind of food are you craving? If your unsure, type 'foodlist' to see all your options.",
+        "OTHER": "I didn't quite get that. Could you repeat yourself?"
+      },
+      "ASK_FOR_CONFIRMATION": {
+        "INITIAL": "Sure thing! Just to double-check, could you confirm I understood you correctly (yes/no). You're looking for a restaurant which:",
+        "PRICERANGE": "- is '{priceranges}ly' priced,",
+        "AREA": "- is in the {areas} of town,",
+        "FOOD": "- and offers {foods} food."
+      },
+      "LEVENSHTEIN": {
+        "CONFIRM": "Let me double-check: did you mean the following: {typo_list}?"
+      }
+    },
+    "DIALOG_MANAGER": {
+      "FOODLIST": "Here's the list of all possible food types for you:\n{foodlist}",
+      "GOODBYE": "Goodbye - thanks for using our restaurant recommender. Hope to see you again soon!",
+      "NO_NEW_PREFERENCES": "I didn't quite get that - could you please provide your preferences again?",
       "YOURE_WELCOME": "You're welcome!",
       "NO_SUGGESTION_FROM_REQUEST": "Sorry, I don't have a suggestion right now. Please provide more information about your preferences.",
-      "NULL": "Sorry, I didn't quite get that. Could you repeat yourself?",
-      "WELCOME": "Hello! Welcome to our restaurant recommendation system! To change your settings, type -config at any time"
+      "NULL": "Sorry, I didn't quite get that. Could you please repeat yourself?",
+      "WELCOME": "Hey! Welcome to the restaurant recommendation system. I'm happy to help you find a restaurant!\nLet's start with your preferences."
     }
   }
 }
