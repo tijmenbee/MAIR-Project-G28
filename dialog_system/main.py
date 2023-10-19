@@ -1,6 +1,7 @@
 import sys
+import os
 
-sys.path.append("c:\\Users\\tijme\\Documents\\GitHub\\MAIR-Project-G28")
+sys.path.append(os.getcwd())
 
 from classifiers.feedforward_nn import FeedForwardNN
 from classifiers.logistic_regression import LogisticRegressionModel
