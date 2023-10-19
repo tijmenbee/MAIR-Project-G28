@@ -42,7 +42,7 @@
   "informal": {
     "DIALOG_STATE": {
       "SUGGESTION_STRING": {
-        "INITIAL": "How about '{suggestion.name}'?\nIt is '{suggestion.pricerange}ly' priced, in the {suggestion.area} of town, and has {suggestion.food} food!",
+        "INITIAL": "How about '{suggestion.name}'?\nIt is {suggestion.pricerange}ly priced, in the {suggestion.area} of town, and has {suggestion.food} food!",
         "ASK_ADDITIONAL_REQS": "Now, would you like its address, phone number, or postcode?",
         "NO_SUGGESTION_AVAILABLE": "Unfortunately, there are no suggestions given your requirements. Please try something else!"
       },
