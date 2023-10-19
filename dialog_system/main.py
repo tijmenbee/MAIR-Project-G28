@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("c:\\Users\\tijme\\Documents\\GitHub\\MAIR-Project-G28")
+
 from classifiers.feedforward_nn import FeedForwardNN
 from classifiers.logistic_regression import LogisticRegressionModel
 from data.data_processor import train_data
