@@ -149,8 +149,16 @@ class DialogState:
     def ask_for_confirmation(self) -> None:
         confirmation_str = self.strings["ASK_FOR_CONFIRMATION"]["INITIAL"] + "\n"
 
-        confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["PRICERANGE"].format(priceranges=', '.join(self._pricerange)) + "\n"
-        confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["AREA"].format(areas=', '.join(self._area)) + "\n"
+        pricerange_str = self.strings["ASK_FOR_CONFIRMATION"]["PRICERANGE"]
+        if "any" in self._pricerange:
+            pricerange_str = self.strings["ASK_FOR_CONFIRMATION"]["PRICERANGE_ANY"]
+
+        area_str = self.strings["ASK_FOR_CONFIRMATION"]["AREA"]
+        if "any" in self._area:
+            area_str = self.strings["ASK_FOR_CONFIRMATION"]["AREA_ANY"]
+
+        confirmation_str += pricerange_str.format(priceranges=', '.join(self._pricerange)) + "\n"
+        confirmation_str += area_str.format(areas=', '.join(self._area)) + "\n"
         confirmation_str += self.strings["ASK_FOR_CONFIRMATION"]["FOOD"].format(foods=', '.join(self._food)) + "\n"
 
         self.system_message = confirmation_str

@@ -22,7 +22,9 @@
       "ASK_FOR_CONFIRMATION": {
         "INITIAL": "Confirm the following (yes/no):",
         "PRICERANGE": "Price range: {priceranges}",
+        "PRICERANGE_ANY": "Price range: {priceranges}",
         "AREA": "Area: {areas}",
+        "AREA_ANY": "Area: {areas}",
         "FOOD": "Food: {foods}"
       },
       "LEVENSHTEIN": {
@@ -61,8 +63,10 @@
       },
       "ASK_FOR_CONFIRMATION": {
         "INITIAL": "Sure thing! Just to double-check, could you confirm I understood you correctly (yes/no). You're looking for a restaurant which:",
-        "PRICERANGE": "- is '{priceranges}ly' priced,",
+        "PRICERANGE": "- is {priceranges}ly priced,",
+        "PRICERANGE_ANY": "- has any price,",
         "AREA": "- is in the {areas} of town,",
+        "AREA_ANY": "- in any part of town,",
         "FOOD": "- and offers {foods} food."
       },
       "LEVENSHTEIN": {

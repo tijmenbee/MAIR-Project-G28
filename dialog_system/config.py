@@ -6,7 +6,7 @@ TYPO_CHECK = False
 LEVENSHTEIN_DISTANCE = 3
 SYSTEM_DELAY = 0
 DEBUG_MODE = False
-INFORMAL = True
+INFORMAL = False
 
 
 @dataclass
@@ -53,7 +53,7 @@ def create_config_parser():
     parser.add_argument("--levenshtein", type=int, default=LEVENSHTEIN_DISTANCE, help="Set the Levenshtein distance for auto-correct.")
     parser.add_argument("--system-delay", type=float, default=SYSTEM_DELAY, help="Set the system output delay (in seconds).")
     parser.add_argument("--debug-mode", type=bool, default=DEBUG_MODE, help="Enable or disable debug mode.")
-    parser.add_argument("--informal", type=bool, default=INFORMAL, help="Enable or disable informal mode (if False, "
+    parser.add_argument("--version0", action='store_false', help="Enable or disable informal mode (if False, "
                                                                         "system will use 'neutral' language.")
 
     return parser

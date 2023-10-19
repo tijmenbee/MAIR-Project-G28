@@ -16,7 +16,7 @@ if __name__ == "__main__":
         levenshtein=args.levenshtein,
         system_delay=args.system_delay,
         debug_mode=args.debug_mode,
-        informal=args.informal
+        informal=args.version0
     )
 
     manager = DialogManager(LogisticRegressionModel(train_data), config)
