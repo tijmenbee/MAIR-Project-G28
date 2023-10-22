@@ -36,7 +36,7 @@
       "GOODBYE": "Goodbye. Thank you for using our restaurant recommender.",
       "NO_NEW_PREFERENCES": "I could not understand that - please provide your preferences again.",
       "YOURE_WELCOME": "You're welcome.",
-      "NO_SUGGESTION_FROM_REQUEST": "I don't have a suggestion right now. Please provide more information about your preferences.",
+      "NO_SUGGESTION_FROM_REQLIST": "I don't have a suggestion right now. Please provide more information about your preferences.",
       "NULL": "I could not understand that. Please repeat yourself.",
       "WELCOME": "Welcome to the restaurant recommendation system."
     }
@@ -78,7 +78,7 @@
       "GOODBYE": "Goodbye - thanks for using our restaurant recommender. Hope to see you again soon!",
       "NO_NEW_PREFERENCES": "I didn't quite get that - could you please provide your preferences again?",
       "YOURE_WELCOME": "You're welcome!",
-      "NO_SUGGESTION_FROM_REQUEST": "Sorry, I don't have a suggestion right now. Please provide more information about your preferences.",
+      "NO_SUGGESTION_FROM_REQLIST": "Sorry, I don't have a suggestion right now. Please provide more information about your preferences.",
       "NULL": "Sorry, I didn't quite get that. Could you please repeat yourself?",
       "WELCOME": "Hey! Welcome to the restaurant recommendation system. I'm happy to help you find a restaurant!\nLet's start with your preferences."
     }
